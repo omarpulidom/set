@@ -1,365 +1,161 @@
-import { useState } from "react";
-import { Text, Image, ImageBackground, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather } from '@expo/vector-icons'
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { useRouter } from 'expo-router'
+import { useMemo, useRef, useState } from 'react'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Colors } from '@/components/colors'
+import { WeekStrip } from '@/components/gym/GymUI'
+import { mockRoutines } from '@/features/gym/mock-data'
+import { useTicketMockStore } from '@/features/tickets/mock-store'
 
-import { GrainyImage, HoloCard } from "@/components/Skia";
-import { Pdf417View } from "@reeq/react-native-pdf417";
-import { Feather } from "@expo/vector-icons";
+function formatDuration(minutes: number) {
+  return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')} hrs`
+}
 
-const cardBackground = require("@/assets/images/id_card_bg2.png");
-const photo = require("@/assets/mock/omar.png");
-const signature = require("@/assets/mock/sign.png");
+const months = [
+  { name: 'AGO', completedDays: [1, 2, 5, 8, 11, 14, 18, 22, 25, 29] },
+  { name: 'JUL', completedDays: [3, 6, 7, 10, 15, 19, 23, 26, 30] },
+  { name: 'JUN', completedDays: [2, 4, 9, 13, 16, 20, 24, 27] },
+  { name: 'MAY', completedDays: [1, 5, 8, 12, 17, 21, 25, 28] },
+  { name: 'ABR', completedDays: [3, 6, 10, 14, 18, 23, 26] },
+  { name: 'MAR', completedDays: [2, 7, 11, 15, 20, 24, 29] },
+]
 
-export default function HomeTab() {
-  const { width: cardWidth, height: cardHeight } =
-    Image.resolveAssetSource(cardBackground);
-  const [cardRenderSize, setCardRenderSize] = useState({ width: 0, height: 0 });
-  const sizes = {
-    photo: {
-      width: cardRenderSize.width * 0.29,
-      height: cardRenderSize.height * 0.61,
-    },
-    grain: cardRenderSize.height * 0.22,
-    barcode: {
-      width: cardRenderSize.width * 0.29,
-      height: cardRenderSize.height * 0.1,
-    },
-    signature: {
-      width: cardRenderSize.width * 0.15,
-      height: cardRenderSize.height * 0.096,
-    },
-    title: cardRenderSize.height * 0.091,
-    subtitle: cardRenderSize.height * 0.04,
-    itemTitle: cardRenderSize.height * 0.03,
-    itemContent: cardRenderSize.height * 0.051,
-    padding: cardRenderSize.height * 0.081,
-    footer: cardRenderSize.height * 0.025,
-  };
+function MonthlyTrainingGrid() {
+  return (
+    <View className='mt-4 flex-row gap-3'>
+      {[0, 1, 2].map((column) => (
+        <View key={column} className='flex-1 gap-3'>
+          {months.filter((_, index) => index % 3 === column).map((month) => (
+            <View key={month.name} className='aspect-square rounded-3xl bg-surface-muted p-3'>
+              <View className='flex-row items-center justify-between px-1 pt-1'>
+                <Text className='font-geist-mono text-xs tracking-[1px] text-ink-muted'>{month.name}</Text>
+                <Text className='font-geist-mono text-[10px] text-ink-muted'>2026</Text>
+              </View>
+              <View className='mt-auto gap-1'>
+                {Array.from({ length: 5 }, (_, week) => (
+                  <View key={week} className='flex-row gap-1'>
+                    {Array.from({ length: 7 }, (_, day) => {
+                      const date = week * 7 + day + 1
+                      const exists = date <= 31
+                      return (
+                        <View
+                          key={date}
+                          className={`aspect-square flex-1 rounded-sm ${
+                            !exists ? 'bg-transparent' : month.completedDays.includes(date) ? 'bg-surface-dark' : 'bg-surface-card'
+                          }`}
+                        />
+                      )
+                    })}
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
+  )
+}
+
+export default function TicketsTab() {
+  const router = useRouter()
+  const [viewMode, setViewMode] = useState<'grid' | 'month'>('grid')
+  const routineSheetRef = useRef<BottomSheetModal>(null)
+  const snapPoints = useMemo(() => ['45%'], [])
+  const { tickets, todayCompleted } = useTicketMockStore()
+  const privateTickets = tickets.filter((ticket) => ticket.visibility === 'private')
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-center bg-[#f0f0f0]">
-      <View className="w-full p-6 items-center justify-center">
-        {true && (
-          <View
-            onLayout={(e) => {
-              setCardRenderSize({
-                width: e.nativeEvent.layout.width,
-                height: e.nativeEvent.layout.height,
-              });
-            }}
-            style={{
-              width: "100%",
-              aspectRatio: cardWidth / cardHeight,
-            }}
-          >
-            <HoloCard
-              width={cardRenderSize.width}
-              height={cardRenderSize.height}
-              borderRadius={16}
-              style={{ width: "100%", height: "100%", overflow: "hidden" }}
-            >
-              <ImageBackground
-                source={cardBackground}
-                style={{ width: "100%", height: "100%" }}
-              >
-                <View className="flex-1" style={{ padding: sizes.padding }}>
-                  <View className="flex-row">
-                    {/* Left Column: Photo + Barcode */}
-                    <View>
-                      <View
-                        className="border-[0.2px] border-[#A9A9A9]"
-                        style={{
-                          borderRadius: sizes.padding * 0.45,
-                        }}
-                      >
-                        <GrainyImage
-                          source={photo}
-                          width={sizes.photo.width}
-                          height={sizes.photo.height}
-                          borderRadius={sizes.padding * 0.45}
-                          grainTileSize={sizes.grain}
-                        />
-                      </View>
-                      <Pdf417View
-                        text="@omarpm"
-                        style={{
-                          height: sizes.barcode.height,
-                          width: sizes.barcode.width,
-                          marginTop: sizes.padding * 0.375,
-                          mixBlendMode: "color-burn",
-                        }}
-                      />
-                    </View>
-                    {/* Right Column: Text */}
-                    <View className="flex-1" style={{ gap: sizes.padding }}>
-                      {/* Title + Subtitle */}
-                      <View
-                        className="items-center justify-center"
-                        style={{
-                          paddingTop: sizes.padding * 0.375,
-                          marginRight: -sizes.padding,
-                        }}
-                      >
-                        <Text
-                          className="font-didot leading-none"
-                          style={{ fontSize: sizes.title }}
-                        >
-                          IDENTITY CARD
-                        </Text>
-                        <Text
-                          className="font-geist-mono-medium leading-none"
-                          style={{ fontSize: sizes.subtitle }}
-                        >
-                          KUITTI
-                        </Text>
-                      </View>
-                      {/* Data + Photo */}
-                      <View
-                        className="flex-row items-center"
-                        style={{
-                          gap: sizes.padding * 0.75,
-                          paddingLeft: sizes.padding * 0.75,
-                        }}
-                      >
-                        {/* Data */}
-                        <View
-                          className="flex-1"
-                          style={{ gap: sizes.padding * 0.5 }}
-                        >
-                          {/* Row - SURNAME + STAGE NAME */}
-                          <View className="flex-row justify-between items-center">
-                            {/* Item - SURNAME */}
-                            <View style={{ gap: sizes.padding * 0.15 }}>
-                              <Text
-                                className="font-doto-extrabold leading-none"
-                                style={{
-                                  color: "#202020",
-                                  fontSize: sizes.itemTitle,
-                                  letterSpacing: 0.15 * sizes.itemTitle,
-                                }}
-                              >
-                                SURNAME
-                              </Text>
-                              <Text
-                                className="font-geist-mono-light leading-none"
-                                style={{
-                                  fontSize: sizes.itemContent,
-                                  letterSpacing: 0.08 * sizes.itemContent,
-                                }}
-                              >
-                                PULIDO
-                              </Text>
-                            </View>
-                            {/* Item - STAGE NAME */}
-                            <View style={{ gap: sizes.padding * 0.15 }}>
-                              <Text
-                                className="font-doto-extrabold leading-none"
-                                style={{
-                                  color: "#202020",
-                                  fontSize: sizes.itemTitle,
-                                  letterSpacing: 0.15 * sizes.itemTitle,
-                                }}
-                              >
-                                STAGE NAME
-                              </Text>
-                              <Text
-                                className="font-geist-mono-light leading-none"
-                                style={{
-                                  fontSize: sizes.itemContent,
-                                  letterSpacing: 0.08 * sizes.itemContent,
-                                }}
-                              >
-                                @OMARPM
-                              </Text>
-                            </View>
-                          </View>
-                          {/* Item - NAME */}
-                          <View style={{ gap: sizes.padding * 0.15 }}>
-                            <Text
-                              className="font-doto-extrabold leading-none"
-                              style={{
-                                color: "#202020",
-                                fontSize: sizes.itemTitle,
-                                letterSpacing: 0.15 * sizes.itemTitle,
-                              }}
-                            >
-                              NAME
-                            </Text>
-                            <Text
-                              className="font-geist-mono-light leading-none"
-                              style={{
-                                fontSize: sizes.itemContent,
-                                letterSpacing: 0.08 * sizes.itemContent,
-                              }}
-                            >
-                              OMAR
-                            </Text>
-                          </View>
-                          {/* Item - MEMBER SINCE */}
-                          <View style={{ gap: sizes.padding * 0.15 }}>
-                            <Text
-                              className="font-doto-extrabold leading-none"
-                              style={{
-                                color: "#202020",
-                                fontSize: sizes.itemTitle,
-                                letterSpacing: 0.15 * sizes.itemTitle,
-                              }}
-                            >
-                              MEMBER SINCE
-                            </Text>
-                            <Text
-                              className="font-geist-mono-light leading-none"
-                              style={{
-                                fontSize: sizes.itemContent,
-                                letterSpacing: 0.08 * sizes.itemContent,
-                              }}
-                            >
-                              04/07/2026
-                            </Text>
-                          </View>
-                          {/* Row - CHECK-INS + SIGNATURE */}
-                          <View className="flex-row justify-between items-start">
-                            {/* Item - CHECK-INS */}
-                            <View style={{ gap: sizes.padding * 0.15 }}>
-                              <Text
-                                className="font-doto-extrabold leading-none"
-                                style={{
-                                  color: "#202020",
-                                  fontSize: sizes.itemTitle,
-                                  letterSpacing: 0.15 * sizes.itemTitle,
-                                }}
-                              >
-                                CHECK-INS
-                              </Text>
-                              <Text
-                                className="font-geist-mono-light leading-none"
-                                style={{
-                                  fontSize: sizes.itemContent,
-                                  letterSpacing: 0.08 * sizes.itemContent,
-                                }}
-                              >
-                                34
-                              </Text>
-                            </View>
-                            {/* Item - SIGNATURE */}
-                            <View style={{ gap: sizes.padding * 0.15 }}>
-                              <Text
-                                className="font-doto-extrabold leading-none"
-                                style={{
-                                  color: "#202020",
-                                  fontSize: sizes.itemTitle,
-                                  letterSpacing: 0.15 * sizes.itemTitle,
-                                }}
-                              >
-                                SIGNATURE
-                              </Text>
-                              <View style={{ mixBlendMode: "darken" }}>
-                                <Image
-                                  style={{
-                                    height: sizes.signature.height,
-                                    width: sizes.signature.width,
-                                    resizeMode: "contain",
-                                  }}
-                                  source={signature}
-                                />
-                              </View>
-                            </View>
-                          </View>
-                        </View>
-                        {/* Photo */}
-                        <View style={{ mixBlendMode: "color-burn" }}>
-                          <GrainyImage
-                            source={photo}
-                            width={sizes.photo.width * 0.425}
-                            height={sizes.photo.height * 0.425}
-                            borderRadius={sizes.padding * 0.25}
-                            grainTileSize={sizes.grain}
-                            grayscale
-                          />
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                  <View className="flex-row justify-between mt-auto">
-                    <Text
-                      className="font-doto-black"
-                      style={{ fontSize: sizes.footer }}
-                    >
-                      DATE OF ISSUE 04/07/2026
-                    </Text>
-                    <Text
-                      className="font-doto-black"
-                      style={{ fontSize: sizes.footer }}
-                    >
-                      DESIGNED BY PM
-                    </Text>
-                  </View>
-                </View>
-              </ImageBackground>
-            </HoloCard>
-          </View>
-        )}
-
-        <View className="p-6 w-full bg-white border rounded-3xl border-gray-200">
+    <SafeAreaView className='flex-1 bg-surface' edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        <View className='flex-row items-center justify-between'>
           <View>
-            <Text className="font-biro-script tracking-tighter text-[40px]">
-              meditate
-            </Text>
-            <View className="h-[1px] w-[75%] -mt-3 bg-gray-200" />
+            <Text className='font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>Tickets</Text>
           </View>
-          <View className="mt-2 gap-1">
-            <View className="flex-row gap-6 justify-center">
-              <View className="bg-[#1d1d1d] rounded-full h-16 w-16 items-center justify-center">
-                <Image
-                  source={require("@/assets/images/loyalty_card/hole.png")}
-                  className="h-10 w-10"
-                />
-              </View>
-              <View className="bg-[#1d1d1d] rounded-full h-16 w-16 items-center justify-center">
-                <Image
-                  source={require("@/assets/images/loyalty_card/hole.png")}
-                  className="h-10 w-10"
-                />
-              </View>
-              <View className="bg-[#1d1d1d] rounded-full h-16 w-16 items-center justify-center">
-                <Text className="font-geist-mono-medium text-white text-[16px]">
-                  22
-                </Text>
-              </View>
-              <View className="bg-[#1d1d1d] rounded-full h-16 w-16 items-center justify-center">
-                <Image
-                  source={require("@/assets/images/loyalty_card/hole.png")}
-                  className="h-10 w-10"
-                />
-              </View>
-            </View>
-            <View className="flex-row gap-6 justify-center">
-              <View className="bg-[#1d1d1d] rounded-full h-16 w-16 items-center justify-center">
-                <Feather name="plus" size={24} color="white" />
-              </View>
-              <View className="bg-[#f0f0f0] rounded-full h-16 w-16 items-center justify-center">
-                <Text className="font-geist-mono-medium text-[#1d1d1d] text-[16px]">
-                  25
-                </Text>
-              </View>
-              <View className="bg-[#f0f0f0] rounded-full h-16 w-16 items-center justify-center">
-                <Text className="font-geist-mono-medium text-[#1d1d1d] text-[16px]">
-                  26
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View className="h-[1px] w-[100%] mt-6 bg-gray-200" />
-          <View className="mt-2 justify-between flex-row">
-            <Text className="font-geist-mono text-[#6e6e6e] text-[12px]">
-              WEEK 1
-            </Text>
-            <Text className="font-geist-mono text-[#6e6e6e] text-[12px]">
-              VALID FROM 20 JUL TILL 26 JUL
-            </Text>
+          <TouchableOpacity onPress={() => router.push('/circles')} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'>
+            <Feather name='menu' size={19} color={Colors.surface.dark} />
+          </TouchableOpacity>
+        </View>
+
+        <View className='mt-7'>
+          <WeekStrip
+            todayCompleted={todayCompleted}
+            onCurrentDayPress={() => routineSheetRef.current?.present()}
+          />
+        </View>
+
+        <View className='mt-9 flex-row items-baseline justify-between'>
+          <Text className='font-geist-mono-medium text-xs tracking-[1.5px] text-ink-muted'>ENTRENAMIENTOS</Text>
+          <View className='flex-row rounded-full bg-surface-muted p-1'>
+            <TouchableOpacity
+              onPress={() => setViewMode('grid')}
+              className={`h-8 w-8 items-center justify-center rounded-full ${viewMode === 'grid' ? 'bg-surface-dark' : ''}`}
+            >
+              <Feather name='grid' size={15} color={viewMode === 'grid' ? Colors.surface.card : Colors.ink.soft} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setViewMode('month')}
+              className={`h-8 w-8 items-center justify-center rounded-full ${viewMode === 'month' ? 'bg-surface-dark' : ''}`}
+            >
+              <Feather name='calendar' size={15} color={viewMode === 'month' ? Colors.surface.card : Colors.ink.soft} />
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
+        {viewMode === 'grid' ? (
+          <View className='mt-4 flex-row gap-3'>
+            {[0, 1, 2].map((column) => (
+              <View key={column} className='flex-1 gap-3'>
+                {privateTickets.filter((_, index) => index % 3 === column).map((ticket) => (
+                  <TouchableOpacity
+                    key={ticket.id}
+                    onPress={() => router.push({ pathname: '/ticket/[workoutId]', params: { workoutId: ticket.id } })}
+                    className='aspect-square rounded-3xl bg-surface-muted p-3'
+                  >
+                    <View className='flex-row items-start justify-between'>
+                      <Text className='mt-1 font-geist-mono text-[8px] text-ink-muted'>{ticket.completedAt}</Text>
+                      <Feather name='arrow-up-right' size={12} color={Colors.surface.dark} />
+                    </View>
+                    <View className='mt-auto'>
+                      <Text className='font-geist-mono-semibold text-base tracking-[-1px] text-surface-dark'>{ticket.routineName.toUpperCase()}</Text>
+                      <Text className='mt-1 font-geist-mono text-[10px] text-ink-muted'>{formatDuration(ticket.durationMinutes)}</Text>
+                      <Text className='mt-0.5 font-geist-mono text-[10px] text-ink-muted'>{ticket.volumeKg.toLocaleString('es-MX')} kg</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
+          </View>
+        ) : (
+          <MonthlyTrainingGrid />
+        )}
+      </ScrollView>
+      <BottomSheetModal
+        ref={routineSheetRef}
+        snapPoints={snapPoints}
+        backgroundStyle={{ backgroundColor: Colors.surface.card }}
+        handleIndicatorStyle={{ backgroundColor: Colors.ink.soft }}
+      >
+        <BottomSheetView className='flex-1 px-5'>
+          <Text className='font-geist-mono-semibold text-2xl text-surface-dark'>Elige una rutina</Text>
+          <View className='mt-5'>
+            {mockRoutines.map((routine) => (
+              <TouchableOpacity
+                key={routine.id}
+                onPress={() => {
+                  routineSheetRef.current?.dismiss()
+                  router.push({ pathname: '/workout/[routineId]', params: { routineId: routine.id } })
+                }}
+                className='flex-row items-center justify-between border-t border-border-soft py-5'
+              >
+                <View><Text className='font-geist-mono-semibold text-base text-surface-dark'>{routine.name}</Text><Text className='mt-1 font-geist-mono text-xs text-ink-muted'>{routine.exercises.length} ejercicios</Text></View>
+                <Feather name='arrow-up-right' size={17} color={Colors.surface.dark} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </SafeAreaView>
-  );
+  )
 }

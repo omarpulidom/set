@@ -4,14 +4,29 @@ import { Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+  const tabs = {
+    index: {
+      label: 'Tickets',
+      icon: 'credit-card',
+    },
+    routines: {
+      label: 'Plan',
+      icon: 'list',
+    },
+    social: {
+      label: 'Amigos',
+      icon: 'users',
+    },
+  } as const
+
   return (
     <>
       {/* TabBar */}
-      <View className='bg-gray-50 border-t-2 border-gray-200 pb-6 pt-4 px-6'>
-        <View className='flex-row justify-center items-center gap-6'>
-          {/* Screen 1: Inicio */}
+      <View className='border-t border-border bg-surface-canvas px-5 pb-6 pt-3'>
+        <View className='flex-row items-center justify-center gap-2'>
           {state.routes.map((route, index) => {
-            if (route.name !== 'index') return null
+            const tab = tabs[route.name as keyof typeof tabs]
+            if (!tab) return null
             const isFocused = state.index === index
 
             const onPress = () => {
@@ -30,58 +45,15 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
               <TouchableOpacity
                 key={route.key}
                 onPress={onPress}
-                className={`flex-col items-center gap-1 py-5 px-7 rounded-xl min-w-[70px] ${
-                  isFocused ? 'bg-primary-100' : ''
+                className={`min-w-[57px] flex-col items-center gap-1 rounded-2xl px-2 py-3 ${
+                  isFocused ? 'bg-ink' : ''
                 }`}
               >
-                <Feather
-                  name='home'
-                  size={24}
-                  color={isFocused ? Colors.primary.DEFAULT : Colors.gray[700]}
-                />
+                <Feather name={tab.icon} size={24} color={isFocused ? Colors.surface.card : Colors.ink.soft} />
                 <Text
-                  className={`font-medium text-xs ${isFocused ? 'text-primary' : 'text-gray-700'}`}
+                  className={`font-geist-mono text-[10px] ${isFocused ? 'text-surface-card' : 'text-ink-soft'}`}
                 >
-                  Inicio
-                </Text>
-              </TouchableOpacity>
-            )
-          })}
-
-          {/* Screen 2: Profile */}
-          {state.routes.map((route, index) => {
-            if (route.name !== 'profile') return null
-            const isFocused = state.index === index
-
-            const onPress = () => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              })
-
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name)
-              }
-            }
-
-            return (
-              <TouchableOpacity
-                key={route.key}
-                onPress={onPress}
-                className={`flex-col items-center gap-1 py-5 px-7 rounded-xl ${
-                  isFocused ? 'bg-primary-100' : ''
-                }`}
-              >
-                <Feather
-                  name='user'
-                  size={24}
-                  color={isFocused ? Colors.primary.DEFAULT : Colors.gray[700]}
-                />
-                <Text
-                  className={`font-medium text-xs ${isFocused ? 'text-primary' : 'text-gray-700'}`}
-                >
-                  Perfil
+                  {tab.label}
                 </Text>
               </TouchableOpacity>
             )

@@ -23,13 +23,28 @@ export default function TabsLayout() {
         <Tabs.Screen
           name='index'
           options={{
-            title: 'Home',
+            title: 'Tickets',
           }}
         />
         <Tabs.Screen
+          name='routines'
+          options={{
+            title: 'Plan',
+          }}
+        />
+        <Tabs.Screen
+          name='social'
+          options={{
+            title: 'Amigos',
+          }}
+        />
+        <Tabs.Screen name='training' options={{ href: null }} />
+        <Tabs.Screen name='stats' options={{ href: null }} />
+        <Tabs.Screen name='account' options={{ href: null }} />
+        <Tabs.Screen
           name='profile'
           options={{
-            title: 'Profile',
+            href: null,
           }}
         />
       </Tabs>
