@@ -1,5 +1,5 @@
 {
-  "name": "kuitti",
+  "name": "set",
   "version": "0.0.1",
   "main": "expo-router/entry",
   "scripts": {
@@ -18,10 +18,10 @@
     "ts": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo-google-fonts/doto": "^0.4.1",
     "@expo-google-fonts/geist-mono": "^0.4.2",
     "@expo-google-fonts/gfs-didot": "^0.4.1",
     "@expo-google-fonts/libre-barcode-39": "^0.4.3",
+    "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",
     "@formatjs/intl-datetimeformat": "6.18.2",
     "@formatjs/intl-displaynames": "6.8.13",

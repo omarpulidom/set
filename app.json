@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Kuitti",
-    "slug": "kuitti",
+    "name": "set",
+    "slug": "set",
     "version": "0.0.1",
-    "scheme": "com.pm.kuitti",
+    "scheme": "com.pm.set",
     "platforms": ["ios", "android"],
     "plugins": [
       "expo-dev-client",
@@ -40,7 +40,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pm.kuitti",
+      "bundleIdentifier": "com.pm.set",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMotionUsageDescription": "Used for tilting the ID card with gyroscope."
@@ -53,7 +53,7 @@
         "foregroundImage": "./src/assets/appIcons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pm.kuitti",
+      "package": "com.pm.set",
       "versionCode": 1
     },
     "extra": {
