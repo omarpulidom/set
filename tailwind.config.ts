@@ -15,37 +15,6 @@ const config: Config = {
     extend: {
       colors: Colors,
       fontFamily: {
-        doto: [
-          AppFontNames.Doto_400Regular,
-        ],
-        'doto-thin': [
-          AppFontNames.Doto_100Thin,
-        ],
-        'doto-extralight': [
-          AppFontNames.Doto_200ExtraLight,
-        ],
-        'doto-light': [
-          AppFontNames.Doto_300Light,
-        ],
-        'doto-regular': [
-          AppFontNames.Doto_400Regular,
-        ],
-        'doto-medium': [
-          AppFontNames.Doto_500Medium,
-        ],
-        'doto-semibold': [
-          AppFontNames.Doto_600SemiBold,
-        ],
-        'doto-bold': [
-          AppFontNames.Doto_700Bold,
-        ],
-        'doto-extrabold': [
-          AppFontNames.Doto_800ExtraBold,
-        ],
-        'doto-black': [
-          AppFontNames.Doto_900Black,
-        ],
-
         didot: [
           AppFontNames.GFSDidot_400Regular,
           'serif',
@@ -53,6 +22,23 @@ const config: Config = {
 
         'barcode-39': [
           AppFontNames.LibreBarcode39_400Regular,
+        ],
+
+        space: [
+          AppFontNames.SpaceGrotesk_400Regular,
+          'sans-serif',
+        ],
+        'space-light': [
+          AppFontNames.SpaceGrotesk_300Light,
+        ],
+        'space-medium': [
+          AppFontNames.SpaceGrotesk_500Medium,
+        ],
+        'space-semibold': [
+          AppFontNames.SpaceGrotesk_600SemiBold,
+        ],
+        'space-bold': [
+          AppFontNames.SpaceGrotesk_700Bold,
         ],
 
         'geist-mono': [

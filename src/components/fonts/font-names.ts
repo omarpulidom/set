@@ -1,19 +1,15 @@
 import type { AppFontKeys } from './fonts'
 
 export const AppFontNames = {
-  Doto_100Thin: 'Doto_100Thin',
-  Doto_200ExtraLight: 'Doto_200ExtraLight',
-  Doto_300Light: 'Doto_300Light',
-  Doto_400Regular: 'Doto_400Regular',
-  Doto_500Medium: 'Doto_500Medium',
-  Doto_600SemiBold: 'Doto_600SemiBold',
-  Doto_700Bold: 'Doto_700Bold',
-  Doto_800ExtraBold: 'Doto_800ExtraBold',
-  Doto_900Black: 'Doto_900Black',
-
   GFSDidot_400Regular: 'GFSDidot_400Regular',
 
   LibreBarcode39_400Regular: 'LibreBarcode39_400Regular',
+
+  SpaceGrotesk_300Light: 'SpaceGrotesk_300Light',
+  SpaceGrotesk_400Regular: 'SpaceGrotesk_400Regular',
+  SpaceGrotesk_500Medium: 'SpaceGrotesk_500Medium',
+  SpaceGrotesk_600SemiBold: 'SpaceGrotesk_600SemiBold',
+  SpaceGrotesk_700Bold: 'SpaceGrotesk_700Bold',
 
   GeistMono_100Thin: 'GeistMono_100Thin',
   GeistMono_100Thin_Italic: 'GeistMono_100Thin_Italic',

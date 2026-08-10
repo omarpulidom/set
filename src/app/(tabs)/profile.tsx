@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { StarRating } from "@/components/Elements/StarRating";
+import { Colors } from "@/components/colors";
 
 export default function ProfileTab() {
   const [ticketRenderSize, setTicketRenderSize] = useState({ width: 0 });
@@ -23,7 +24,7 @@ export default function ProfileTab() {
   return (
     <SafeAreaView className="flex-1 items-center p-8 bg-gray-50">
       <View
-        className="w-full bg-gray-100"
+        className="w-full bg-surface-muted"
         onLayout={(e) => {
           setTicketRenderSize({
             width: e.nativeEvent.layout.width,
@@ -42,7 +43,7 @@ export default function ProfileTab() {
                 borderTopWidth: sizes.edge * 0.75,
                 borderLeftColor: "transparent",
                 borderRightColor: "transparent",
-                borderTopColor: "white",
+                borderTopColor: Colors.surface.card,
               }}
             />
           ))}
@@ -70,9 +71,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -80,9 +81,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -90,9 +91,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -100,9 +101,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -110,9 +111,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -120,9 +121,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
             </View>
           </View>
@@ -133,10 +134,10 @@ export default function ProfileTab() {
           >
             {/* Label */}
             <Text
-              className="font-salbabida text-center text-[#523F43] leading-none"
+              className="font-salbabida text-center text-legacy-ticketHeading leading-none"
               style={{ fontSize: sizes.title, marginTop: sizes.gap * 0.5 }}
             >
-              KUITTI
+              SET
             </Text>
             {/* Data */}
             <View
@@ -147,19 +148,19 @@ export default function ProfileTab() {
               }}
             >
               <Text
-                className="font-merchant text-center text-[#342D2A]"
+                className="font-merchant text-center text-legacy-ticket"
                 style={{ fontSize: sizes.label }}
               >
                 ORDEN:#23
               </Text>
               <Text
-                className="font-merchant text-center text-[#342D2A]"
+                className="font-merchant text-center text-legacy-ticket"
                 style={{ fontSize: sizes.content }}
               >
                 JULIO 2, 2026
               </Text>
               <Text
-                className="font-merchant text-center text-[#6E6E6E]"
+                className="font-merchant text-center text-ink-muted"
                 style={{ fontSize: sizes.content }}
               >
                 RESUMEN DIARIO
@@ -169,7 +170,7 @@ export default function ProfileTab() {
             <View style={{ position: "relative" }}>
               {/* Separator */}
               <Text
-                className="font-merchant text-center text-[#E0E0E0]"
+                className="font-merchant text-center text-legacy-ticketDivider"
                 style={{
                   fontSize: sizes.content,
                   position: "absolute",
@@ -186,7 +187,7 @@ export default function ProfileTab() {
                 <View style={{ gap: sizes.gap * 3.14 }}>
                   {/* Label */}
                   <Text
-                    className="font-merchant text-[#342D2A]"
+                    className="font-merchant text-legacy-ticket"
                     style={{ fontSize: sizes.label }}
                   >
                     ACTIVIDAD
@@ -194,38 +195,38 @@ export default function ProfileTab() {
                   {/* List */}
                   <View style={{ gap: sizes.gap }}>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       GYM
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       LECTURA
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       AGUA 2L
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       MEDITAR
                     </Text>
                     <View style={{ height: sizes.content }} />
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       CORRER
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       PROGRAMAR
@@ -236,7 +237,7 @@ export default function ProfileTab() {
                 <View style={{ gap: sizes.gap * 3.14 }}>
                   {/* Label */}
                   <Text
-                    className="font-merchant text-[#342D2A]"
+                    className="font-merchant text-legacy-ticket"
                     style={{ fontSize: sizes.label }}
                   >
                     ESTATUS
@@ -244,38 +245,38 @@ export default function ProfileTab() {
                   {/* List */}
                   <View style={{ gap: sizes.gap }}>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       OK
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       OK
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       OK
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       OK
                     </Text>
                     <View style={{ height: sizes.content }} />
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       PENDIENTE
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       PENDIENTE
@@ -286,7 +287,7 @@ export default function ProfileTab() {
                 <View style={{ gap: sizes.gap * 3.14 }}>
                   {/* Label */}
                   <Text
-                    className="font-merchant text-[#342D2A]"
+                    className="font-merchant text-legacy-ticket"
                     style={{ fontSize: sizes.label }}
                   >
                     HORA
@@ -294,38 +295,38 @@ export default function ProfileTab() {
                   {/* List */}
                   <View style={{ gap: sizes.gap, alignItems: "center" }}>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       12:24
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       19:56
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       20:12
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       14:31
                     </Text>
                     <View style={{ height: sizes.content }} />
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       -
                     </Text>
                     <Text
-                      className="font-merchant text-[#342D2A]"
+                      className="font-merchant text-legacy-ticket"
                       style={{ fontSize: sizes.content }}
                     >
                       -
@@ -336,7 +337,7 @@ export default function ProfileTab() {
             </View>
             {/* Separator */}
             <Text
-              className="font-merchant text-center text-[#E0E0E0]"
+              className="font-merchant text-center text-legacy-ticketDivider"
               style={{
                 fontSize: sizes.content,
                 alignSelf: "center",
@@ -358,13 +359,13 @@ export default function ProfileTab() {
                 style={{ marginBottom: sizes.gap * 1.28 }}
               >
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{ fontSize: sizes.content }}
                 >
                   SUBTOTAL
                 </Text>
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{ fontSize: sizes.content }}
                 >
                   6
@@ -372,7 +373,7 @@ export default function ProfileTab() {
               </View>
               <View className="flex-row justify-between">
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{
                     fontSize: sizes.content,
                     marginBottom: sizes.gap * 2.28,
@@ -381,7 +382,7 @@ export default function ProfileTab() {
                   DESCUENTO
                 </Text>
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{ fontSize: sizes.content }}
                 >
                   -2
@@ -389,13 +390,13 @@ export default function ProfileTab() {
               </View>
               <View className="flex-row justify-between">
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{ fontSize: sizes.label }}
                 >
                   TOTAL
                 </Text>
                 <Text
-                  className="font-merchant text-[#342D2A]"
+                  className="font-merchant text-legacy-ticket"
                   style={{ fontSize: sizes.label }}
                 >
                   4/6
@@ -407,11 +408,11 @@ export default function ProfileTab() {
               <StarRating
                 percentage={0.7}
                 size={sizes.label * 1.33}
-                color="#342D2A"
+                color={Colors.legacy.ticket}
               />
             </View>
             <Text
-              className="font-merchant text-center text-[#342D2A]"
+              className="font-merchant text-center text-legacy-ticket"
               style={{
                 fontSize: sizes.label,
                 marginVertical: sizes.gap * 1.28,
@@ -421,20 +422,20 @@ export default function ProfileTab() {
             </Text>
             <View className="flex-row justify-between">
               <Text
-                className="font-merchant text-[#342D2A]"
+                className="font-merchant text-legacy-ticket"
                 style={{ fontSize: sizes.content }}
               >
                 Jueves 2 @ 02:12 AM
               </Text>
               <Text
-                className="font-merchant text-[#342D2A]"
+                className="font-merchant text-legacy-ticket"
                 style={{ fontSize: sizes.content }}
               >
                 @OMARPM
               </Text>
             </View>
             <Text
-              className="font-barcode-39 text-center text-[#342D2A]"
+              className="font-barcode-39 text-center text-legacy-ticket"
               style={{
                 fontSize: sizes.barcode,
                 marginTop: sizes.gap * 0.75,
@@ -444,13 +445,13 @@ export default function ProfileTab() {
               1111111111111111
             </Text>
             <Text
-              className="font-merchant text-center text-[#342D2A]"
+              className="font-merchant text-center text-legacy-ticket"
               style={{ fontSize: sizes.content }}
             >
-              Gracias por usar KUITTI!
+              Gracias por usar SET!
             </Text>
             <Text
-              className="font-merchant text-center text-[#6E6E6E]"
+              className="font-merchant text-center text-ink-muted"
               style={{ fontSize: sizes.content, marginTop: sizes.gap * 1.75 }}
             >
               Todo lo que repites, te convierte.
@@ -472,9 +473,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -482,9 +483,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -492,9 +493,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -502,9 +503,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -512,9 +513,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
               <Text
                 style={{
@@ -522,9 +523,9 @@ export default function ProfileTab() {
                   fontSize: sizes.watermark,
                   height: sizes.watermark * 1,
                 }}
-                className="leading-none font-geist-mono-semibold text-[#E27C8C]"
+                className="leading-none font-geist-mono-semibold text-legacy-ticketAccent"
               >
-                KUITTI
+                SET
               </Text>
             </View>
           </View>
@@ -539,8 +540,8 @@ export default function ProfileTab() {
                 borderLeftWidth: sizes.edge,
                 borderRightWidth: sizes.edge,
                 borderTopWidth: sizes.edge * 0.75,
-                borderLeftColor: "white",
-                borderRightColor: "white",
+                borderLeftColor: Colors.surface.card,
+                borderRightColor: Colors.surface.card,
                 borderTopColor: "transparent",
               }}
             />

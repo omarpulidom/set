@@ -71,7 +71,7 @@ export default function Login() {
   }
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
+    <SafeAreaView className='flex-1 bg-surface-card'>
       <KeyboardAvoidingView
         className='flex-1'
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -105,7 +105,7 @@ export default function Login() {
               <View className='gap-6'>
                 {/* Email Input */}
                 <View className='gap-2'>
-                  <Text className='text-sm font-medium text-black'>
+                  <Text className='text-sm font-medium text-ink'>
                     Email
                     <Text className='text-primary'> *</Text>
                   </Text>
@@ -124,21 +124,21 @@ export default function Login() {
                     autoCorrect={false}
                     keyboardType='email-address'
                     className={`
-                      h-14 px-4 rounded-2xl border-2 text-black
-                      ${emailFocused ? 'border-primary bg-white' : 'border-gray-200 bg-gray-50'}
+                      h-14 px-4 rounded-2xl border-2 text-ink
+                      ${emailFocused ? 'border-primary bg-surface-card' : 'border-gray-200 bg-gray-50'}
                       `}
                   />
                 </View>
                 {/* Password Input */}
                 <View className='gap-2'>
-                  <Text className='text-sm font-medium text-black'>
+                  <Text className='text-sm font-medium text-ink'>
                     Password
                     <Text className='text-primary'> *</Text>
                   </Text>
                   <View
                     className={`
                       h-14 flex-row items-center rounded-2xl border-2 px-4
-                      ${passwordFocused ? 'border-primary bg-white' : 'border-gray-200 bg-gray-50'}
+                      ${passwordFocused ? 'border-primary bg-surface-card' : 'border-gray-200 bg-gray-50'}
                     `}
                   >
                     <TextInput
@@ -154,14 +154,14 @@ export default function Login() {
                       secureTextEntry={!showPassword}
                       autoCapitalize='none'
                       autoCorrect={false}
-                      className='flex-1 text-black'
+                      className='flex-1 text-ink'
                     />
                     <TouchableOpacity
                       onPress={handleTogglePassword}
                       className='ml-2 p-1'
                       accessibilityRole='button'
                     >
-                      <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color='#6B7280' />
+                      <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color={Colors.legacy.authMuted} />
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity
@@ -181,7 +181,7 @@ export default function Login() {
                     checked ? 'bg-primary border-primary' : 'bg-gray-50 border-gray-300'
                   }`}
                 >
-                  {checked && <Ionicons name='checkmark' size={14} color='white' />}
+                  {checked && <Ionicons name='checkmark' size={14} color={Colors.surface.card} />}
                 </TouchableOpacity>
 
                 <View className='flex-1'>
@@ -207,9 +207,9 @@ export default function Login() {
                 accessibilityRole='button'
               >
                 {isLoggingIn ? (
-                  <ActivityIndicator color='white' />
+                  <ActivityIndicator color={Colors.surface.card} />
                 ) : (
-                  <Text className='text-white font-semibold text-base'>Login</Text>
+                  <Text className='text-surface-card font-semibold text-base'>Login</Text>
                 )}
               </TouchableOpacity>
 
@@ -225,7 +225,7 @@ export default function Login() {
                 activeOpacity={0.8}
                 accessibilityRole='button'
               >
-                <Text className='text-white font-semibold text-sm'>(DEV) Mock Login</Text>
+                <Text className='text-surface-card font-semibold text-sm'>(DEV) Mock Login</Text>
               </TouchableOpacity>
 
               <View className='flex-row justify-end gap-2 mt-4'>

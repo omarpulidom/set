@@ -1,4 +1,76 @@
 export const Colors = {
+  // Set UI — these semantic tokens are the only palette used by the app UI.
+  blue: {
+    DEFAULT: '#2C6BFF',
+    mist: '#E9EBF0',
+    soft: '#EEF2FF',
+    pale: '#DDE6FF',
+    wash: '#D9E4FF',
+    muted: '#C9D4F0',
+    light: '#7899EC',
+    deep: '#4A5C91',
+  },
+
+  surface: {
+    DEFAULT: '#F3F3F3',
+    canvas: '#F5F5F5',
+    card: '#FFFFFF',
+    subtle: '#EFEFEF',
+    muted: '#E6E6E6',
+    soft: '#DEDEDE',
+    control: '#D4D4D4',
+    dark: '#202020',
+    raised: '#353535',
+  },
+
+  mono: {
+    mist: '#D8D8D8',
+    muted: '#ADADAD',
+    light: '#707070',
+    DEFAULT: '#202020',
+    deep: '#4E4E4E',
+  },
+
+  ink: {
+    DEFAULT: '#202020',
+    strong: '#181817',
+    muted: '#6E6E6E',
+    soft: '#77736E',
+    subtle: '#7C7D86',
+    quiet: '#88847F',
+    light: '#AEB4C4',
+  },
+
+  border: {
+    DEFAULT: '#E9E6E1',
+    soft: '#ECECF0',
+    muted: '#E7E3DC',
+    input: '#D9D5CE',
+    dashed: '#CBC7C0',
+    warm: '#E2DFDA',
+    chart: '#C9C6C0',
+  },
+
+  chart: {
+    line: '#343434',
+    grid: '#E5E2DD',
+    gridLight: '#EDEAE5',
+    label: '#989692',
+    muted: '#8B8985',
+  },
+
+  legacy: {
+    ticket: '#342D2A',
+    ticketHeading: '#523F43',
+    ticketAccent: '#E27C8C',
+    ticketDivider: '#E0E0E0',
+    ticketAccentMuted: '#7D9D8C',
+    ticketAccentWarm: '#C69B63',
+    ticketBorder: '#C6C2BC',
+    fallback: '#2E78B7',
+    authMuted: '#6B7280',
+  },
+
   primary: {
     DEFAULT: '#2563eb', // Blue 600
     900: '#1e3a8a', // Blue 900

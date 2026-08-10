@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Colors } from "@/components/colors";
 
 interface StarRatingProps {
   percentage: number; // 0.0 - 1.0
@@ -10,7 +11,7 @@ interface StarRatingProps {
 export function StarRating({
   percentage,
   size = 18,
-  color = "#342D2A",
+  color = Colors.legacy.ticket,
 }: StarRatingProps) {
   const progress = Math.max(0, Math.min(1, percentage));
 

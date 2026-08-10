@@ -1,15 +1,4 @@
 import {
-  Doto_100Thin,
-  Doto_200ExtraLight,
-  Doto_300Light,
-  Doto_400Regular,
-  Doto_500Medium,
-  Doto_600SemiBold,
-  Doto_700Bold,
-  Doto_800ExtraBold,
-  Doto_900Black,
-} from '@expo-google-fonts/doto'
-import {
   GeistMono_100Thin,
   GeistMono_100Thin_Italic,
   GeistMono_200ExtraLight,
@@ -31,6 +20,13 @@ import {
 } from '@expo-google-fonts/geist-mono'
 import { GFSDidot_400Regular } from '@expo-google-fonts/gfs-didot'
 import { LibreBarcode39_400Regular } from '@expo-google-fonts/libre-barcode-39'
+import {
+  SpaceGrotesk_300Light,
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from '@expo-google-fonts/space-grotesk'
 
 const LocalFonts = {
   BiroScript: require('@/assets/fonts/Biro_Script_Regular.ttf'),
@@ -39,19 +35,15 @@ const LocalFonts = {
 } as const
 
 export const AppFonts = {
-  Doto_100Thin,
-  Doto_200ExtraLight,
-  Doto_300Light,
-  Doto_400Regular,
-  Doto_500Medium,
-  Doto_600SemiBold,
-  Doto_700Bold,
-  Doto_800ExtraBold,
-  Doto_900Black,
-
   GFSDidot_400Regular,
 
   LibreBarcode39_400Regular,
+
+  SpaceGrotesk_300Light,
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
 
   GeistMono_100Thin,
   GeistMono_100Thin_Italic,
