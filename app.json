@@ -43,7 +43,9 @@
       "bundleIdentifier": "com.pm.set",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMotionUsageDescription": "Used for tilting the ID card with gyroscope."
+        "NSMotionUsageDescription": "Used for tilting the ID card with gyroscope.",
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera to capture photos and videos.",
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone to record audio for video recordings."
       },
       "buildNumber": "1",
       "appleTeamId": "C5TXZNQR66"
@@ -54,7 +56,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.pm.set",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"]
     },
     "extra": {
       "router": {
