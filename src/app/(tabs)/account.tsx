@@ -64,7 +64,7 @@ export default function AccountTab() {
         <View className='mt-8 flex-row items-end justify-between'>
           <View>
             <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>AJUSTES</Text>
-            <Text className='mt-1 font-geist-mono-semibold text-xl tracking-[-1px] text-surface-dark'>
+            <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
               Preferencias
             </Text>
           </View>
@@ -96,7 +96,7 @@ export default function AccountTab() {
           <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-light'>PRÓXIMAMENTE</Text>
           <View className='mt-4 flex-row items-start justify-between'>
             <View className='flex-1'>
-              <Text className='font-geist-mono-semibold text-xl tracking-[-1px] text-surface-card'>
+              <Text className='font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-card'>
                 Grupos y amigos
               </Text>
               <Text className='mt-2 font-geist-mono text-xs leading-5 text-ink-light'>

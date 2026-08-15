@@ -66,7 +66,7 @@ export default function TrainingTab() {
         <View className='mt-7 flex-row items-end justify-between'>
           <View>
             <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>RUTINA</Text>
-            <Text className='mt-1 font-geist-mono-semibold text-xl tracking-[-1px] text-surface-dark'>
+            <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
               Lo que harás hoy
             </Text>
           </View>

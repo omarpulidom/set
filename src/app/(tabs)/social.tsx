@@ -21,8 +21,8 @@ export default function SocialTab() {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         <View className='flex-row items-center justify-between'>
           <View>
-            <Text className='font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>Amigos</Text>
-            <Text className='mt-2 font-geist-mono text-xs text-ink-muted'>Tickets de tus círculos</Text>
+            <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>Amigos</Text>
+            <Text className='mt-2 font-geist-mono text-xs uppercase tracking-tight text-ink-muted'>Tickets de tus círculos</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/circles')} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'>
             <Feather name='users' size={18} color={Colors.surface.dark} />

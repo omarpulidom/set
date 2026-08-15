@@ -72,7 +72,7 @@ export default function TicketsTab() {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         <View className='flex-row items-center justify-between'>
           <View>
-            <Text className='font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>Tickets</Text>
+            <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>Tickets</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/circles')} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'>
             <Feather name='menu' size={19} color={Colors.surface.dark} />
@@ -138,7 +138,7 @@ export default function TicketsTab() {
         handleIndicatorStyle={{ backgroundColor: Colors.ink.soft }}
       >
         <BottomSheetView className='flex-1 px-5'>
-          <Text className='font-geist-mono-semibold text-2xl text-surface-dark'>Elige una rutina</Text>
+          <Text className='font-geist-mono-semibold text-2xl uppercase text-surface-dark'>Elige una rutina</Text>
           <View className='mt-5'>
             {mockRoutines.map((routine) => (
               <TouchableOpacity

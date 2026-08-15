@@ -8,7 +8,7 @@ export default function NotFoundScreen() {
     <SafeAreaView className={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Oops!',
+          title: 'OOPS!',
         }}
       />
       <Text className={styles.title}>{"This screen doesn't exist."}</Text>
@@ -21,7 +21,7 @@ export default function NotFoundScreen() {
 
 const styles = {
   container: `flex flex-1 bg-surface-card`,
-  title: `text-xl font-bold`,
+  title: `text-xl font-bold uppercase`,
   link: `mt-4 pt-4`,
   linkText: `text-legacy-fallback`,
 }

@@ -36,9 +36,9 @@ export default function CircleDetailScreen() {
         <View className='mt-5 flex-row'><TextInput value={member} onChangeText={setMember} placeholder='Agregar persona' placeholderTextColor={Colors.ink.soft} className='flex-1 rounded-3xl bg-surface-muted px-4 py-4 font-geist-mono text-sm text-surface-dark' /><TouchableOpacity onPress={() => { addMember(circle.id, member); setMember('') }} className='ml-2 items-center justify-center rounded-3xl bg-surface-dark px-4'><Feather name='user-plus' size={17} color={Colors.surface.card} /></TouchableOpacity></View>
         <TouchableOpacity onPress={() => { deleteCircle(circle.id); router.replace('/circles') }} className='mt-8 flex-row items-center self-start'><Feather name='trash-2' size={15} color={Colors.ink.soft} /><Text className='ml-2 font-geist-mono text-xs text-ink-soft'>Eliminar círculo</Text></TouchableOpacity>
         <View className='mt-10 border-t border-border-soft pt-7'>
-          <Text className='font-geist-mono-semibold text-xl text-surface-dark'>Tickets de {circle.name}</Text>
+          <Text className='font-geist-mono-semibold text-xl uppercase text-surface-dark'>Tickets de {circle.name}</Text>
           <View className='mt-5 gap-4'>
-            {circleTickets.length ? circleTickets.map((ticket) => <TicketFrame key={ticket.id} ticket={ticket} onReact={(reaction) => react(ticket.id, reaction)} onShare={() => { void Share.share({ message: `Set · ${ticket.routineName} · ${ticket.durationMinutes} min` }) }} />) : <View className='rounded-3xl bg-surface-muted p-5'><Text className='font-geist-mono text-sm text-ink-muted'>Aún no hay tickets en este círculo.</Text></View>}
+            {circleTickets.length ? circleTickets.map((ticket) => <TicketFrame key={ticket.id} ticket={ticket} onReact={(reaction) => react(ticket.id, reaction)} onShare={() => { void Share.share({ message: `Set · ${ticket.routineName} · ${ticket.durationMinutes} min` }) }} />            ) : <View className='rounded-3xl bg-surface-muted p-5'><Text className='font-geist-mono text-sm uppercase tracking-tight text-ink-muted'>Aún no hay tickets en este círculo.</Text></View>}
           </View>
         </View>
       </ScrollView>

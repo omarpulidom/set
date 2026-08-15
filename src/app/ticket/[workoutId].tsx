@@ -19,7 +19,7 @@ export default function TicketDetailScreen() {
           <TouchableOpacity onPress={() => router.back()} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'><Feather name='arrow-left' size={19} color={Colors.surface.dark} /></TouchableOpacity>
           <TouchableOpacity onPress={() => { void Share.share({ message: `Set · ${ticket.routineName} · ${ticket.durationMinutes} min` }) }} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'><Feather name='share' size={17} color={Colors.surface.dark} /></TouchableOpacity>
         </View>
-        <Text className='mt-7 font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>{ticket.routineName}</Text>
+        <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>{ticket.routineName}</Text>
         <TicketFrame ticket={ticket} onReact={(reaction) => react(ticket.id, reaction)} />
         <View className='mt-6 rounded-3xl bg-surface-muted p-5'>
           <View className='flex-row border-t border-border-soft pt-4'>

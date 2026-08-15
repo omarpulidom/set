@@ -92,7 +92,7 @@ export default function WorkoutScreen() {
           <Feather name='x' size={24} color={Colors.ink.DEFAULT} />
         </TouchableOpacity>
         <View className='items-center'>
-          <Text className='font-geist-mono text-lg font-semibold text-ink'>{routine.name}</Text>
+          <Text className='font-geist-mono text-lg uppercase font-semibold text-ink'>{routine.name}</Text>
         </View>
         <Text className='font-geist-mono text-base text-ink'>{elapsed}</Text>
       </View>
@@ -103,7 +103,7 @@ export default function WorkoutScreen() {
           paddingBottom: 28,
         }}
       >
-        <Text className='mb-4 font-geist-mono text-xs leading-5 text-ink-muted'>
+        <Text className='mb-4 font-geist-mono text-xs uppercase leading-5 tracking-tight text-ink-muted'>
           Registra lo que hiciste, no tienes que seguir el plan exactamente.
         </Text>
         <View className='gap-5'>

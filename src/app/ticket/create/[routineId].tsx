@@ -30,8 +30,8 @@ export default function CreateTicketScreen() {
         <TouchableOpacity onPress={() => router.back()} className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'>
           <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
         </TouchableOpacity>
-        <Text className='mt-7 font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>Cerrar ticket</Text>
-        <Text className='mt-2 font-geist-mono text-sm leading-5 text-ink-muted'>La foto y tu firma son obligatorias para publicar el ticket grupal.</Text>
+        <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>Cerrar ticket</Text>
+        <Text className='mt-2 font-geist-mono text-sm uppercase leading-5 tracking-tight text-ink-muted'>La foto y tu firma son obligatorias para publicar el ticket grupal.</Text>
 
         <TouchableOpacity onPress={() => setPhotoReady(true)} className={`mt-7 h-56 items-center justify-center rounded-3xl border border-dashed ${photoReady ? 'border-ink bg-surface-soft' : 'border-border-dashed bg-surface-muted'}`}>
           <Feather name={photoReady ? 'check' : 'camera'} size={28} color={Colors.surface.dark} />
@@ -41,7 +41,7 @@ export default function CreateTicketScreen() {
 
         <TouchableOpacity onPress={() => setSigned(true)} className={`mt-4 rounded-3xl p-5 ${signed ? 'bg-surface-dark' : 'bg-surface-muted'}`}>
           <View className='flex-row items-center justify-between'>
-            <View><Text className={`font-geist-mono-semibold text-base ${signed ? 'text-surface-card' : 'text-surface-dark'}`}>Firma de autor</Text><Text className={`mt-1 font-geist-mono text-xs ${signed ? 'text-ink-light' : 'text-ink-muted'}`}>{signed ? 'Ticket firmado' : 'Toca para firmar el ticket'}</Text></View>
+            <View><Text className={`font-geist-mono-semibold text-base uppercase ${signed ? 'text-surface-card' : 'text-surface-dark'}`}>Firma de autor</Text><Text className={`mt-1 font-geist-mono text-xs ${signed ? 'text-ink-light' : 'text-ink-muted'}`}>{signed ? 'Ticket firmado' : 'Toca para firmar el ticket'}</Text></View>
             <Feather name='edit-3' size={18} color={signed ? Colors.surface.card : Colors.surface.dark} />
           </View>
         </TouchableOpacity>

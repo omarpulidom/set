@@ -43,7 +43,7 @@ export default function StatsTab() {
 
         <View className='mt-8'>
           <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>TUS NÚMEROS</Text>
-          <Text className='mt-1 font-geist-mono-semibold text-xl tracking-[-1px] text-surface-dark'>
+          <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
             Progreso de fuerza
           </Text>
         </View>

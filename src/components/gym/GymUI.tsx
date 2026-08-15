@@ -9,7 +9,7 @@ export function GymScreen({ title, children }: { title: string; children: ReactN
     <SafeAreaView className='flex-1 bg-surface' edges={['top', 'left', 'right']}>
       <View className='px-5 pb-4 pt-5'>
         <View>
-          <Text className='font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>
+          <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
             {title}
           </Text>
         </View>
