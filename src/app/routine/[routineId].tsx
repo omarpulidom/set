@@ -87,7 +87,7 @@ export default function RoutineDetailScreen() {
               activeOpacity={0.82}
               className='rounded-3xl bg-surface-muted p-4'
             >
-              <Text className='font-geist-mono-semibold text-sm text-surface-dark'>
+              <Text className='font-geist-mono-medium text-sm text-surface-dark'>
                 {exercise.name}
               </Text>
               <Text className='mt-3 font-geist-mono text-xs text-ink-muted'>
