@@ -30,10 +30,10 @@ export default function RoutineDetailScreen() {
           </TouchableOpacity>
         </View>
         <GraphPaperCard className='mt-5 p-6'>
-          <Text className='font-geist-mono text-4xl font-semibold tracking-[-2px] text-ink'>
+          <Text className='font-geist-mono text-4xl uppercase font-semibold tracking-[-2px] text-ink'>
             {routine.name}
           </Text>
-          <Text className='mt-3 font-geist-mono text-xs leading-5 text-ink'>
+          <Text className='mt-3 font-geist-mono text-xs uppercase leading-5 tracking-tight text-ink'>
             {routine.description}
           </Text>
           <View className='mt-5 flex-row gap-2'>

@@ -108,7 +108,7 @@ export default function ExerciseDetailScreen() {
 
         <Image source={imageForExercise(selectedExercise.id)} resizeMode='contain' className='mt-7 h-44 w-44 self-center rounded-3xl bg-surface-muted' />
 
-        <Text className='mt-7 font-geist-mono-semibold text-3xl tracking-[-1px] text-surface-dark'>{selectedExercise.name}</Text>
+        <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>{selectedExercise.name}</Text>
         <Text className='mt-2 font-geist-mono text-xs text-ink-muted'>{selectedExercise.target} · {selectedExercise.equipment}</Text>
 
         <View className='mt-5 rounded-3xl bg-surface-muted p-3'>
