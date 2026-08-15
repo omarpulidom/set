@@ -15,7 +15,11 @@
     "build:prod:ios": "eas build -e production -p ios --local --non-interactive",
     "prebuild": "expo prebuild",
     "bump": "bun scripts/bump_version.ts",
-    "ts": "tsc --noEmit"
+    "ts": "tsc --noEmit",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "format": "biome format --write",
+    "format:check": "biome format"
   },
   "dependencies": {
     "@expo-google-fonts/geist-mono": "^0.4.2",
