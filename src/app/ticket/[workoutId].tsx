@@ -1,8 +1,10 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ScrollView, Share, Text, TouchableOpacity, View } from 'react-native'
+import { useState } from 'react'
+import { ScrollView, Share, Text, TouchableOpacity, View, Image } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { StarRating } from '@/components/Elements/StarRating'
 import { TicketFrame } from '@/components/tickets/TicketFrame'
 import { useTicketMockStore } from '@/features/tickets/mock-store'
 
@@ -13,7 +15,24 @@ export default function TicketDetailScreen() {
   }>()
   const { react, tickets } = useTicketMockStore()
   const ticket = tickets.find((item) => item.id === workoutId)
+  const [ticketRenderSize, setTicketRenderSize] = useState({
+    width: 0,
+  })
+
+  const sizes = {
+    logo: {
+      width: ticketRenderSize.width * 0.178,
+      height: ticketRenderSize.width * 0.178,
+    },
+    title: ticketRenderSize.width * 0.22,
+    label: ticketRenderSize.width * 0.03,
+    content: ticketRenderSize.width * 0.026,
+    gap: ticketRenderSize.width * 0.023,
+    barcode: ticketRenderSize.width * 0.1,
+    edge: ticketRenderSize.width * 0.021,
+  }
   if (!ticket) return null
+
   return (
     <SafeAreaView
       className='flex-1 bg-surface'
@@ -70,6 +89,540 @@ export default function TicketDetailScreen() {
             Aquí irá el diseño final del ticket, sus datos de series, peso, foto y composición
             visual.
           </Text>
+        </View>
+        <View
+          className='w-full bg-white'
+          onLayout={(e) => {
+            setTicketRenderSize({
+              width: e.nativeEvent.layout.width,
+            })
+          }}
+        >
+          <View className='flex-row'>
+            {Array.from({
+              length: 24,
+            }).map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeftWidth: sizes.edge,
+                  borderRightWidth: sizes.edge,
+                  borderTopWidth: sizes.edge * 0.75,
+                  borderLeftColor: 'transparent',
+                  borderRightColor: 'transparent',
+                  borderTopColor: Colors.surface.DEFAULT,
+                }}
+              />
+            ))}
+          </View>
+          <View
+            className='flex-row overflow-hidden'
+            style={{
+              paddingHorizontal: sizes.gap * 0.57,
+              paddingVertical: sizes.gap * 1.5,
+            }}
+          >
+            {/* Info */}
+            <View
+              className='flex-1'
+              style={{
+                padding: sizes.gap * 2.3,
+              }}
+            >
+              {/* Logo */}
+              <View className='self-center'>
+                <Image
+                  source={require('@/assets/images/logo/logo.png')}
+                  resizeMode='contain'
+                  style={{
+                    width: sizes.logo.width,
+                    height: sizes.logo.height,
+                  }}
+                />
+              </View>
+              {/* Data */}
+              <View
+                style={{
+                  gap: sizes.gap * 0.75,
+                  marginBottom: sizes.gap * 3.5,
+                  marginTop: sizes.gap * 1.2,
+                }}
+              >
+                <Text
+                  className='font-merchant text-center text-legacy-ticket'
+                  style={{
+                    fontSize: sizes.content,
+                  }}
+                >
+                  SESSION:#23
+                </Text>
+                <Text
+                  className='font-merchant text-center text-legacy-ticket'
+                  style={{
+                    fontSize: sizes.content,
+                  }}
+                >
+                  AUGUST 2, 2026
+                </Text>
+                <Text
+                  className='font-merchant text-center text-ink-muted'
+                  style={{
+                    fontSize: sizes.content,
+                  }}
+                >
+                 UPPER DAY
+                </Text>
+              </View>
+              {/* Table */}
+              <View
+                style={{
+                  position: 'relative',
+                }}
+              >
+                {/* Separator */}
+                <Text
+                  className='font-merchant text-center text-legacy-ticketDivider'
+                  style={{
+                    fontSize: sizes.content,
+                    position: 'absolute',
+                    alignSelf: 'center',
+                    top: sizes.gap * 2.14,
+                    marginHorizontal: -sizes.gap,
+                  }}
+                >
+                  ************************************************
+                </Text>
+                {/* Table */}
+                <View className='w-full flex-row justify-between'>
+                  {/* Column 1 */}
+                  <View
+                    style={{
+                      gap: sizes.gap * 3.14,
+                    }}
+                  >
+                    {/* Label */}
+                    <Text
+                      className='font-merchant text-legacy-ticket'
+                      style={{
+                        fontSize: sizes.content,
+                      }}
+                    >
+                      EXERCISES
+                    </Text>
+                    {/* List */}
+                    <View
+                      style={{
+                        gap: sizes.gap,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        1. BENCH PRESS
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        2. LAT PULLDOWN
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        3. INCLINE DB PRESS
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        4. SHOULDER PRESS
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        5. LATERAL RAISE
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        6. HAMMER CURL
+                      </Text>
+                    </View>
+                  </View>
+                  {/* Column 2 */}
+                  <View
+                  className='items-center'
+                    style={{
+                      gap: sizes.gap * 3.14,
+                    }}
+                  >
+                    {/* Label */}
+                    <Text
+                      className='font-merchant text-legacy-ticket'
+                      style={{
+                        fontSize: sizes.content,
+                      }}
+                    >
+                      SETS/REPS
+                    </Text>
+                    {/* List */}
+                    <View
+                      style={{
+                        gap: sizes.gap,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        4 x 6
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        3 x 12
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        3 x 10
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        3 x 10
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        4 x 15
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        3 x 12
+                      </Text>
+                    </View>
+                  </View>
+                  {/* Column 3 */}
+                  <View
+                  className='items-end'
+                    style={{
+                      gap: sizes.gap * 3.14,
+                    }}
+                  >
+                    {/* Label */}
+                    <Text
+                      className='font-merchant text-legacy-ticket'
+                      style={{
+                        fontSize: sizes.content,
+                      }}
+                    >
+                      WEIGHT
+                    </Text>
+                    {/* List */}
+                    <View
+                      style={{
+                        gap: sizes.gap,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                       @ 85 kg
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        @ 65 kg
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        @ 32 kg
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        @ 25 kg
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        @ 10 kg
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        @ 18 kg
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+              {/* Separator */}
+              <Text
+                className='font-merchant text-center text-legacy-ticketDivider'
+                style={{
+                  fontSize: sizes.content,
+                  alignSelf: 'center',
+                  marginTop: sizes.gap * 3.14,
+                  marginHorizontal: -sizes.gap,
+                }}
+              >
+                ************************************************
+              </Text>
+              {/* Price info */}
+              <View
+                style={{
+                  marginTop: sizes.gap,
+                  marginBottom: sizes.gap * 1.28,
+                }}
+              >
+                <View
+                  className='flex-row justify-between'
+                  style={{
+                    marginBottom: sizes.gap * 1.28,
+                  }}
+                >
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    SETS
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    23
+                  </Text>
+                </View>
+                                <View
+                  className='flex-row justify-between'
+                  style={{
+                    marginBottom: sizes.gap * 1.28,
+                  }}
+                >
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    REPS
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    214
+                  </Text>
+                </View>
+                                <View
+                  className='flex-row justify-between'
+                  style={{
+                    marginBottom: sizes.gap * 1.28,
+                  }}
+                >
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    DURATION
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    01:18
+                  </Text>
+                </View>
+                <View className='flex-row justify-between'>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                      marginBottom: sizes.gap * 2.28,
+                    }}
+                  >
+                    VOLUME CHANGE
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    +6.4%
+                  </Text>
+                </View>
+                <View className='flex-row justify-between'>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.label,
+                    }}
+                  >
+                    TOTAL
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.label,
+                    }}
+                  >
+                    12,480 kg
+                  </Text>
+                </View>
+              </View>
+              {/* Rating */}
+              <View className='self-center'>
+                <StarRating
+                  percentage={0.7}
+                  size={sizes.label * 1.33}
+                  color={Colors.legacy.ticket}
+                />
+              </View>
+              <Text
+                className='font-merchant text-center text-legacy-ticket'
+                style={{
+                  fontSize: sizes.label,
+                  marginVertical: sizes.gap * 1.28,
+                }}
+              >
+                ************* CHECK CLOSED *************
+              </Text>
+              <View className='flex-row justify-between'>
+                <Text
+                  className='font-merchant text-legacy-ticket'
+                  style={{
+                    fontSize: sizes.content,
+                  }}
+                >
+                  Thursday 2 @ 02:12 PM
+                </Text>
+                <Text
+                  className='font-merchant text-legacy-ticket'
+                  style={{
+                    fontSize: sizes.content,
+                  }}
+                >
+                  @OMARPM
+                </Text>
+              </View>
+              <Text
+                className='font-barcode-39 text-center text-legacy-ticket'
+                style={{
+                  fontSize: sizes.barcode,
+                  marginTop: sizes.gap * 0.75,
+                  marginBottom: -sizes.gap,
+                }}
+              >
+                111111111111111111
+              </Text>
+              <Text
+                className='font-merchant text-center text-legacy-ticket'
+                style={{
+                  fontSize: sizes.content,
+                }}
+              >
+                Thanks for using SET!
+              </Text>
+              <Text
+                className='font-merchant text-center text-ink-muted'
+                style={{
+                  fontSize: sizes.content,
+                  marginTop: sizes.gap * 1.75,
+                }}
+              >
+                Todo lo que repites, te convierte.
+              </Text>
+            </View>
+          </View>
+          <View className='flex-row'>
+            {Array.from({
+              length: 24,
+            }).map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeftWidth: sizes.edge,
+                  borderRightWidth: sizes.edge,
+                  borderTopWidth: sizes.edge * 0.75,
+                  borderLeftColor: Colors.surface.DEFAULT,
+                  borderRightColor: Colors.surface.DEFAULT,
+                  borderTopColor: 'transparent',
+                }}
+              />
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
