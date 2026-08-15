@@ -33,7 +33,9 @@ export default function StatsTab() {
             />
           </View>
           <Text className='mt-4 font-geist-mono-medium text-xs text-ink-muted'>
-            {remainingSessions === 1 ? 'Falta 1 entrenamiento para tu meta' : `Faltan ${remainingSessions} entrenamientos para tu meta`}
+            {remainingSessions === 1
+              ? 'Falta 1 entrenamiento para tu meta'
+              : `Faltan ${remainingSessions} entrenamientos para tu meta`}
           </Text>
         </View>
 
@@ -42,7 +44,9 @@ export default function StatsTab() {
         </View>
 
         <View className='mt-8'>
-          <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>TUS NÚMEROS</Text>
+          <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>
+            TUS NÚMEROS
+          </Text>
           <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
             Progreso de fuerza
           </Text>
@@ -99,14 +103,20 @@ export default function StatsTab() {
 
         <View className='mt-4 flex-row gap-3'>
           <View className='flex-1 rounded-3xl border border-border-soft bg-surface-muted p-5'>
-            <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>MEJOR PESO</Text>
+            <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>
+              MEJOR PESO
+            </Text>
             <Text className='mt-2 font-geist-mono-semibold text-2xl tracking-[-1px] text-surface-dark'>
               72.5 kg
             </Text>
           </View>
           <View className='flex-1 rounded-3xl bg-surface-muted p-5'>
-            <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>ADHERENCIA</Text>
-            <Text className='mt-2 font-geist-mono-semibold text-2xl tracking-[-1px] text-surface-dark'>91%</Text>
+            <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
+              ADHERENCIA
+            </Text>
+            <Text className='mt-2 font-geist-mono-semibold text-2xl tracking-[-1px] text-surface-dark'>
+              91%
+            </Text>
           </View>
         </View>
       </ScrollView>

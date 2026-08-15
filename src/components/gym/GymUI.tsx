@@ -6,7 +6,14 @@ import { Colors } from '@/components/colors'
 
 export function GymScreen({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <SafeAreaView className='flex-1 bg-surface' edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      className='flex-1 bg-surface'
+      edges={[
+        'top',
+        'left',
+        'right',
+      ]}
+    >
       <View className='px-5 pb-4 pt-5'>
         <View>
           <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
@@ -35,7 +42,9 @@ export function GraphPaperCard({
   className?: string
 }) {
   return (
-    <View className={`rounded-3xl border border-border bg-surface-card ${className}`}>{children}</View>
+    <View className={`rounded-3xl border border-border bg-surface-card ${className}`}>
+      {children}
+    </View>
   )
 }
 

@@ -36,14 +36,20 @@ export default function TrainingTab() {
 
           <View className='mt-6 flex-row border-t border-border-soft pt-4'>
             <View className='flex-1'>
-              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>EJERCICIOS</Text>
+              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>
+                EJERCICIOS
+              </Text>
               <Text className='mt-1 font-geist-mono-semibold text-sm text-surface-dark'>
                 {routine.exercises.length}
               </Text>
             </View>
             <View className='flex-1 border-l border-border-soft pl-4'>
-              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>DURACIÓN</Text>
-              <Text className='mt-1 font-geist-mono-semibold text-sm text-surface-dark'>~60 min</Text>
+              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-subtle'>
+                DURACIÓN
+              </Text>
+              <Text className='mt-1 font-geist-mono-semibold text-sm text-surface-dark'>
+                ~60 min
+              </Text>
             </View>
           </View>
 
@@ -58,14 +64,18 @@ export default function TrainingTab() {
               })
             }
           >
-            <Text className='font-geist-mono-semibold text-sm text-surface-card'>INICIAR ENTRENAMIENTO</Text>
+            <Text className='font-geist-mono-semibold text-sm text-surface-card'>
+              INICIAR ENTRENAMIENTO
+            </Text>
             <Feather name='arrow-up-right' size={17} color={Colors.surface.card} />
           </TouchableOpacity>
         </View>
 
         <View className='mt-7 flex-row items-end justify-between'>
           <View>
-            <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>RUTINA</Text>
+            <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>
+              RUTINA
+            </Text>
             <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
               Lo que harás hoy
             </Text>
@@ -82,7 +92,14 @@ export default function TrainingTab() {
             }
           >
             <Text className='font-geist-mono-medium text-xs text-surface-dark'>VER RUTINA</Text>
-            <Feather name='arrow-up-right' size={14} color={Colors.surface.dark} style={{ marginLeft: 5 }} />
+            <Feather
+              name='arrow-up-right'
+              size={14}
+              color={Colors.surface.dark}
+              style={{
+                marginLeft: 5,
+              }}
+            />
           </TouchableOpacity>
         </View>
 
@@ -94,10 +111,14 @@ export default function TrainingTab() {
             >
               <View className='flex-row items-center'>
                 <View className='mr-3 h-9 w-9 items-center justify-center rounded-full bg-surface-soft'>
-                  <Text className='font-geist-mono-semibold text-[10px] text-surface-dark'>0{index + 1}</Text>
+                  <Text className='font-geist-mono-semibold text-[10px] text-surface-dark'>
+                    0{index + 1}
+                  </Text>
                 </View>
                 <View>
-                  <Text className='font-geist-mono-semibold text-sm text-surface-dark'>{exercise.name}</Text>
+                  <Text className='font-geist-mono-semibold text-sm text-surface-dark'>
+                    {exercise.name}
+                  </Text>
                   <Text className='mt-1 font-geist-mono text-[10px] text-ink-subtle'>
                     {exercise.targetSets} series · {exercise.targetReps} reps
                   </Text>

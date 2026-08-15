@@ -1,2 +1,2 @@
-export { GrainyImage } from "./GrainyImage";
-export { HoloCard } from "./HoloCard";
+export { GrainyImage } from './GrainyImage'
+export { HoloCard } from './HoloCard'

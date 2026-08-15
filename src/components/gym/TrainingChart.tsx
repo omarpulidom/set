@@ -106,7 +106,9 @@ export function TrainingChart({ title, summary, values, unit, bar = false }: Cha
                 />
               )
             })}
-        <Text className='absolute bottom-0 left-0 font-geist-mono text-[10px] text-chart-label'>0 KM</Text>
+        <Text className='absolute bottom-0 left-0 font-geist-mono text-[10px] text-chart-label'>
+          0 KM
+        </Text>
         <Text className='absolute bottom-0 right-0 font-geist-mono text-[10px] text-chart-label'>
           6.7 KM
         </Text>

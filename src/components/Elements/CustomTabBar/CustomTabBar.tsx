@@ -49,7 +49,11 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
                   isFocused ? 'bg-ink' : ''
                 }`}
               >
-                <Feather name={tab.icon} size={24} color={isFocused ? Colors.surface.card : Colors.ink.soft} />
+                <Feather
+                  name={tab.icon}
+                  size={24}
+                  color={isFocused ? Colors.surface.card : Colors.ink.soft}
+                />
                 <Text
                   className={`font-geist-mono text-[10px] ${isFocused ? 'text-surface-card' : 'text-ink-soft'}`}
                 >

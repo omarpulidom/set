@@ -1,5 +1,5 @@
-import type { CompletedWorkout, ExerciseProgressPoint, Routine } from './types'
 import { Colors } from '@/components/colors'
+import type { CompletedWorkout, ExerciseProgressPoint, Routine } from './types'
 
 export const mockProfile = {
   displayName: 'Omar',

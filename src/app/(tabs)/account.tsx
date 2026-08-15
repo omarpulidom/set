@@ -63,7 +63,9 @@ export default function AccountTab() {
 
         <View className='mt-8 flex-row items-end justify-between'>
           <View>
-            <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>AJUSTES</Text>
+            <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>
+              AJUSTES
+            </Text>
             <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
               Preferencias
             </Text>
@@ -84,8 +86,12 @@ export default function AccountTab() {
                 />
               </View>
               <View className='ml-3 flex-1'>
-                <Text className='font-geist-mono-medium text-sm text-surface-dark'>{setting.label}</Text>
-                <Text className='mt-1 font-geist-mono text-xs text-ink-subtle'>{setting.value}</Text>
+                <Text className='font-geist-mono-medium text-sm text-surface-dark'>
+                  {setting.label}
+                </Text>
+                <Text className='mt-1 font-geist-mono text-xs text-ink-subtle'>
+                  {setting.value}
+                </Text>
               </View>
               <Feather name='chevron-right' size={18} color={Colors.ink.soft} />
             </TouchableOpacity>
@@ -93,7 +99,9 @@ export default function AccountTab() {
         </View>
 
         <View className='mt-8 rounded-3xl bg-surface-dark p-6'>
-          <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-light'>PRÓXIMAMENTE</Text>
+          <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-light'>
+            PRÓXIMAMENTE
+          </Text>
           <View className='mt-4 flex-row items-start justify-between'>
             <View className='flex-1'>
               <Text className='font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-card'>

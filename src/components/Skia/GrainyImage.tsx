@@ -1,24 +1,26 @@
-import {
-  Blur,
-  Canvas,
-  Fill,
-  Group,
-  ImageShader,
-  Paint,
-  Shader,
-  Skia,
-  useImage,
-} from "@shopify/react-native-skia";
 import type {
   DataSourceParam,
   SkPaint,
   SkRuntimeEffect,
   SkShader,
-} from "@shopify/react-native-skia";
-import { FilterMode, MipmapMode, TileMode } from "@shopify/react-native-skia";
-import { useMemo } from "react";
+} from '@shopify/react-native-skia'
+import {
+  Blur,
+  Canvas,
+  Fill,
+  FilterMode,
+  Group,
+  ImageShader,
+  MipmapMode,
+  Paint,
+  Shader,
+  Skia,
+  TileMode,
+  useImage,
+} from '@shopify/react-native-skia'
+import { useMemo } from 'react'
 
-const GRAIN_TEXTURE = require("@/assets/textures/grain.png");
+const GRAIN_TEXTURE = require('@/assets/textures/grain.png')
 
 const grayscaleShader: SkRuntimeEffect = Skia.RuntimeEffect.Make(`
   uniform shader image;
@@ -27,66 +29,86 @@ const grayscaleShader: SkRuntimeEffect = Skia.RuntimeEffect.Make(`
     float l = c.r * 0.299 + c.g * 0.587 + c.b * 0.114;
     return half4(vec3(l), c.a);
   }
-`)!;
+`)!
 
-type Fit = "cover" | "contain" | "fill" | "fitHeight" | "fitWidth" | "none";
+type Fit = 'cover' | 'contain' | 'fill' | 'fitHeight' | 'fitWidth' | 'none'
 
 type Props = {
-  source: DataSourceParam;
-  width: number;
-  height: number;
-  borderRadius?: number;
-  fit?: Fit;
-  blur?: number;
-  grainTileSize?: number;
-  grainOpacity?: number;
-  grayscale?: boolean;
-};
+  source: DataSourceParam
+  width: number
+  height: number
+  borderRadius?: number
+  fit?: Fit
+  blur?: number
+  grainTileSize?: number
+  grainOpacity?: number
+  grayscale?: boolean
+}
 
 export const GrainyImage = ({
   source,
   width,
   height,
   borderRadius = 0,
-  fit = "cover",
+  fit = 'cover',
   blur = 0.3,
   grainTileSize = 128,
   grainOpacity = 0.32,
   grayscale = false,
 }: Props) => {
-  const image = useImage(source);
-  const grainImage = useImage(GRAIN_TEXTURE);
+  const image = useImage(source)
+  const grainImage = useImage(GRAIN_TEXTURE)
 
   const grainShader: SkShader | null = useMemo(() => {
-    if (!grainImage) return null;
-    const scale =
-      grainTileSize / Math.max(grainImage.width(), grainImage.height());
-    const matrix = Skia.Matrix();
-    matrix.scale(scale, scale);
+    if (!grainImage) return null
+    const scale = grainTileSize / Math.max(grainImage.width(), grainImage.height())
+    const matrix = Skia.Matrix()
+    matrix.scale(scale, scale)
     return grainImage.makeShaderOptions(
       TileMode.Repeat,
       TileMode.Repeat,
       FilterMode.Linear,
       MipmapMode.None,
       matrix,
-    );
-  }, [grainImage, grainTileSize]);
+    )
+  }, [
+    grainImage,
+    grainTileSize,
+  ])
 
   const grainPaint: SkPaint | null = useMemo(() => {
-    if (!grainShader) return null;
-    const paint = Skia.Paint();
-    paint.setShader(grainShader);
-    return paint;
-  }, [grainShader]);
+    if (!grainShader) return null
+    const paint = Skia.Paint()
+    paint.setShader(grainShader)
+    return paint
+  }, [
+    grainShader,
+  ])
 
-  if (!image || !grainPaint) return null;
+  if (!image || !grainPaint) return null
 
   const imageShader = (
-    <ImageShader image={image} fit={fit} rect={{ x: 0, y: 0, width, height }} />
-  );
+    <ImageShader
+      image={image}
+      fit={fit}
+      rect={{
+        x: 0,
+        y: 0,
+        width,
+        height,
+      }}
+    />
+  )
 
   return (
-    <Canvas style={{ width, height, borderRadius, overflow: "hidden" }}>
+    <Canvas
+      style={{
+        width,
+        height,
+        borderRadius,
+        overflow: 'hidden',
+      }}
+    >
       <Group
         layer={
           <Paint>
@@ -95,11 +117,7 @@ export const GrainyImage = ({
         }
       >
         <Fill>
-          {grayscale ? (
-            <Shader source={grayscaleShader}>{imageShader}</Shader>
-          ) : (
-            imageShader
-          )}
+          {grayscale ? <Shader source={grayscaleShader}>{imageShader}</Shader> : imageShader}
         </Fill>
 
         <Group opacity={grainOpacity}>
@@ -107,5 +125,5 @@ export const GrainyImage = ({
         </Group>
       </Group>
     </Canvas>
-  );
-};
+  )
+}
