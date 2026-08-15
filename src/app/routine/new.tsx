@@ -1,34 +1,63 @@
 import { Feather } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useEffect } from 'react'
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
-import { useDerivedRoutineFocus } from '@/features/exercises/muscles'
+import { useDerivedPrimaryFocus, useDerivedRoutineFocus } from '@/features/exercises/muscles'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
 import { mockRoutines } from '@/features/gym/mock-data'
 import { formatMuscles } from '@/lib/funcs'
 
 export default function NewRoutineScreen() {
   const router = useRouter()
-  const { exercises, name, removeExercise, reset, setName } = useRoutineDraftStore()
+  const { routineId } = useLocalSearchParams<{
+    routineId?: string
+  }>()
+  const { editingId, exercises, name, removeExercise, reset, setName, loadForEdit } =
+    useRoutineDraftStore()
   const derivedFocus = useDerivedRoutineFocus()
+  const primaryFocus = useDerivedPrimaryFocus()
   const canSave = Boolean(name.trim() && exercises.length)
+
+  useEffect(() => {
+    if (routineId && editingId !== routineId) {
+      loadForEdit(routineId)
+    }
+  }, [
+    routineId,
+    editingId,
+    loadForEdit,
+  ])
 
   function saveRoutine() {
     if (!canSave) return
-    mockRoutines.unshift({
-      id: `routine-${Date.now()}`,
-      name: name.trim(),
-      description: derivedFocus || 'Rutina personalizada',
-      accent: Colors.mono.DEFAULT,
-      exercises: exercises.map((exercise) => ({
-        id: exercise.id,
-        catalogExerciseId: exercise.catalogExerciseId,
-        name: exercise.name,
-        targetSets: exercise.targetSets || 1,
-        targetReps: exercise.targetReps || 1,
-      })),
-    })
+    const payload = exercises.map((exercise) => ({
+      id: exercise.id,
+      catalogExerciseId: exercise.catalogExerciseId,
+      name: exercise.name,
+      targetSets: exercise.targetSets || 1,
+      targetReps: exercise.targetReps || 1,
+    }))
+    if (editingId) {
+      const index = mockRoutines.findIndex((item) => item.id === editingId)
+      if (index >= 0) {
+        mockRoutines[index] = {
+          ...mockRoutines[index],
+          name: name.trim(),
+          description: derivedFocus || mockRoutines[index].description,
+          exercises: payload,
+        }
+      }
+    } else {
+      mockRoutines.unshift({
+        id: `routine-${Date.now()}`,
+        name: name.trim(),
+        description: derivedFocus || 'Rutina personalizada',
+        accent: Colors.mono.DEFAULT,
+        exercises: payload,
+      })
+    }
     reset()
     router.back()
   }
@@ -59,21 +88,10 @@ export default function NewRoutineScreen() {
           >
             <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
           </TouchableOpacity>
-          <TouchableOpacity
-            disabled={!canSave}
-            onPress={saveRoutine}
-            className={`h-10 items-center justify-center rounded-full px-4 ${canSave ? 'bg-surface-dark' : 'bg-surface-soft'}`}
-          >
-            <Text
-              className={`font-geist-mono-semibold text-xs ${canSave ? 'text-surface-card' : 'text-ink-muted'}`}
-            >
-              Guardar
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <Text className='mt-8 font-geist-mono-semibold text-2xl tracking-[-1px] text-surface-dark'>
-          NUEVA RUTINA
+          {editingId ? 'EDITAR RUTINA' : 'NUEVA RUTINA'}
         </Text>
 
         <View className='mt-8'>
@@ -86,10 +104,15 @@ export default function NewRoutineScreen() {
           />
 
           <View className='mt-3'>
-            {derivedFocus ? (
-              <Text className='font-geist-mono text-xs text-ink-muted'>
-                {formatMuscles(derivedFocus)}
-              </Text>
+            {primaryFocus ? (
+              <View className='rounded-3xl border border-border-soft bg-surface-muted px-5 py-4'>
+                <Text className='font-geist-mono text-[10px] uppercase tracking-[2px] text-ink-muted'>
+                  Músculos trabajados
+                </Text>
+                <Text className='mt-1 font-geist-mono text-sm text-surface-dark'>
+                  {formatMuscles(primaryFocus)}
+                </Text>
+              </View>
             ) : (
               <Text className='font-geist-mono text-xs text-ink-soft'>
                 Agrega ejercicios para ver los músculos trabajados

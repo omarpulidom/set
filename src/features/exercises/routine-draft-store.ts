@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { mockRoutines } from '@/features/gym/mock-data'
 import type { RoutineExercise } from '@/features/gym/types'
 import type { CatalogExercise } from './catalog'
 
@@ -9,16 +10,19 @@ type DraftRoutineExercise = RoutineExercise & {
 type RoutineDraftStore = {
   name: string
   exercises: DraftRoutineExercise[]
+  editingId: string | null
   setName: (name: string) => void
   addExercise: (exercise: CatalogExercise, targetSets?: number, targetReps?: number) => void
   removeExercise: (id: string) => void
   updateExercise: (id: string, field: 'targetSets' | 'targetReps', value: number) => void
+  loadForEdit: (routineId: string) => void
   reset: () => void
 }
 
 export const useRoutineDraftStore = create<RoutineDraftStore>((set) => ({
   name: '',
   exercises: [],
+  editingId: null,
   setName: (name) =>
     set({
       name,
@@ -54,9 +58,25 @@ export const useRoutineDraftStore = create<RoutineDraftStore>((set) => ({
           : exercise,
       ),
     })),
+  loadForEdit: (routineId) => {
+    const routine = mockRoutines.find((item) => item.id === routineId)
+    if (!routine) return
+    set({
+      editingId: routine.id,
+      name: routine.name,
+      exercises: routine.exercises.map((exercise) => ({
+        id: exercise.id,
+        catalogExerciseId: exercise.catalogExerciseId ?? exercise.id,
+        name: exercise.name,
+        targetSets: exercise.targetSets,
+        targetReps: exercise.targetReps,
+      })),
+    })
+  },
   reset: () =>
     set({
       name: '',
       exercises: [],
+      editingId: null,
     }),
 }))

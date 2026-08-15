@@ -84,6 +84,14 @@ export function getExerciseMuscleLabels(catalogExerciseId: string | undefined): 
   return labels
 }
 
+export function getExercisePrimaryMuscleLabel(
+  catalogExerciseId: string | undefined,
+): string | undefined {
+  const exercise = getCatalogExerciseById(catalogExerciseId)
+  if (!exercise?.target) return undefined
+  return translateMuscle(exercise.target)
+}
+
 export function aggregateMuscleLabels(
   catalogExerciseIds: (string | undefined)[],
 ): AggregatedMuscle[] {
@@ -119,12 +127,35 @@ export function buildDerivedFocus(catalogExerciseIds: (string | undefined)[]): s
   return formatMuscleList(aggregated.map((item) => item.label))
 }
 
+export function buildDerivedPrimaryFocus(catalogExerciseIds: (string | undefined)[]): string {
+  const labels = new Set<string>()
+  for (const id of catalogExerciseIds) {
+    const label = getExercisePrimaryMuscleLabel(id)
+    if (label) labels.add(label)
+  }
+  return formatMuscleList([
+    ...labels,
+  ])
+}
+
 export function useDerivedRoutineFocus(): string {
   const catalogExerciseIds = useRoutineDraftStore((state) =>
     state.exercises.map((exercise) => exercise.catalogExerciseId),
   )
   return useMemo(
     () => buildDerivedFocus(catalogExerciseIds),
+    [
+      catalogExerciseIds,
+    ],
+  )
+}
+
+export function useDerivedPrimaryFocus(): string {
+  const catalogExerciseIds = useRoutineDraftStore((state) =>
+    state.exercises.map((exercise) => exercise.catalogExerciseId),
+  )
+  return useMemo(
+    () => buildDerivedPrimaryFocus(catalogExerciseIds),
     [
       catalogExerciseIds,
     ],
