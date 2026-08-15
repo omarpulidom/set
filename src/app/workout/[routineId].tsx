@@ -150,7 +150,7 @@ export default function WorkoutScreen() {
                   activeOpacity={0.82}
                   className='flex-row items-center justify-between p-4'
                 >
-                  <Text className='flex-1 font-geist-mono-semibold text-sm text-surface-dark'>
+                  <Text className='flex-1 font-geist-mono-medium text-sm text-surface-dark'>
                     {exercise.name}
                   </Text>
                   <View className='flex-row items-center gap-3'>
