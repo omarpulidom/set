@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { GraphPaperCard, PrimaryButton } from '@/components/gym/GymUI'
 import { Colors } from '@/components/colors'
+import { videoForExercise } from '@/features/exercises/catalog'
 import { getMockRoutine } from '@/features/gym/mock-data'
 import type { WorkoutSet } from '@/features/gym/types'
 
@@ -27,6 +27,7 @@ export default function WorkoutScreen() {
   }>()
   const routine = getMockRoutine(routineId)
   const [seconds, setSeconds] = useState(0)
+  const [expandedId, setExpandedId] = useState<string | undefined>(() => routine.exercises[0]?.id)
   const [sets, setSets] = useState<Record<string, WorkoutSet[]>>(() =>
     Object.fromEntries(
       routine.exercises.map((exercise) => [
@@ -35,6 +36,10 @@ export default function WorkoutScreen() {
       ]),
     ),
   )
+
+  function toggleExpanded(exerciseId: string) {
+    setExpandedId((current) => (current === exerciseId ? undefined : exerciseId))
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setSeconds((value) => value + 1), 1000)
@@ -86,103 +91,164 @@ export default function WorkoutScreen() {
   }
 
   return (
-    <SafeAreaView className='flex-1 bg-surface-canvas'>
-      <View className='flex-row items-center justify-between px-6 py-4'>
-        <TouchableOpacity onPress={() => router.back()} className='p-2'>
-          <Feather name='x' size={24} color={Colors.ink.DEFAULT} />
+    <SafeAreaView
+      className='flex-1 bg-surface'
+      edges={[
+        'top',
+        'left',
+        'right',
+      ]}
+    >
+      <View className='flex-row items-center justify-between px-5 pt-5'>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+        >
+          <Feather name='x' size={19} color={Colors.surface.dark} />
         </TouchableOpacity>
-        <View className='items-center'>
-          <Text className='font-geist-mono text-lg uppercase font-semibold text-ink'>{routine.name}</Text>
-        </View>
-        <Text className='font-geist-mono text-base text-ink'>{elapsed}</Text>
+        <Text className='font-geist-mono-semibold text-base uppercase tracking-tight text-surface-dark'>
+          {routine.name}
+        </Text>
+        <Text className='font-geist-mono-semibold text-base tabular-nums text-surface-dark'>
+          {elapsed}
+        </Text>
       </View>
 
       <ScrollView
-        className='flex-1 px-6'
         contentContainerStyle={{
-          paddingBottom: 28,
+          padding: 20,
+          paddingBottom: 40,
         }}
+        keyboardShouldPersistTaps='handled'
       >
-        <Text className='mb-4 font-geist-mono text-xs uppercase leading-5 tracking-tight text-ink-muted'>
+        <Text className='font-geist-mono text-xs leading-5 tracking-tight text-ink-soft'>
           Registra lo que hiciste, no tienes que seguir el plan exactamente.
         </Text>
-        <View className='gap-5'>
-          {routine.exercises.map((exercise) => (
-            <GraphPaperCard key={exercise.id} className='p-5'>
-              <View className='flex-row items-start justify-between'>
-                <View>
-                  <Text className='font-geist-mono text-base font-semibold text-ink'>
+
+        <View className='mt-9 flex-row items-center justify-between'>
+          <Text className='font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
+            Ejercicios
+          </Text>
+          <Text className='font-geist-mono text-xs text-ink-muted'>{routine.exercises.length}</Text>
+        </View>
+
+        <View className='mt-4 gap-3'>
+          {routine.exercises.map((exercise) => {
+            const isExpanded = expandedId === exercise.id
+            const videoSource = videoForExercise(exercise.catalogExerciseId ?? exercise.id)
+            return (
+              <View key={exercise.id} className='rounded-3xl bg-surface-muted'>
+                {isExpanded && videoSource ? (
+                  <Image
+                    source={videoSource}
+                    resizeMode='contain'
+                    className='h-44 w-full rounded-t-3xl bg-surface-card'
+                  />
+                ) : null}
+                <TouchableOpacity
+                  onPress={() => toggleExpanded(exercise.id)}
+                  activeOpacity={0.82}
+                  className='flex-row items-center justify-between p-4'
+                >
+                  <Text className='flex-1 font-geist-mono-semibold text-sm text-surface-dark'>
                     {exercise.name}
                   </Text>
-                  <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
-                    PLAN · {exercise.targetSets} × {exercise.targetReps}
-                  </Text>
-                </View>
-                <Feather name='more-horizontal' size={20} color={Colors.ink.muted} />
-              </View>
-              <View className='mt-5 gap-2'>
-                <View className='flex-row px-1'>
-                  <Text className='w-10 font-geist-mono text-[10px] text-ink-muted'>SET</Text>
-                  <Text className='flex-1 font-geist-mono text-[10px] text-ink-muted'>KG</Text>
-                  <Text className='flex-1 font-geist-mono text-[10px] text-ink-muted'>REPS</Text>
-                  <View className='w-8' />
-                </View>
-                {sets[exercise.id].map((set, index) => (
-                  <View key={`${exercise.id}-${index}`} className='flex-row items-center gap-2'>
-                    <Text className='w-8 text-center font-geist-mono text-xs text-ink-muted'>
-                      {index + 1}
-                    </Text>
-                    <TextInput
-                      value={set.weightKg ? String(set.weightKg) : ''}
-                      onChangeText={(value) => updateSet(exercise.id, index, 'weightKg', value)}
-                      placeholder='0'
-                      keyboardType='decimal-pad'
-                      className='flex-1 border border-border-input bg-surface-card px-3 py-3 font-geist-mono text-ink'
+                  <View className='flex-row items-center gap-3'>
+                    <View className='rounded-full bg-surface-card px-2.5 py-1'>
+                      <Text className='font-geist-mono text-[10px] uppercase tracking-tight text-ink-muted'>
+                        {exercise.targetSets} × {exercise.targetReps}
+                      </Text>
+                    </View>
+                    <Feather
+                      name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                      size={18}
+                      color={Colors.ink.muted}
                     />
-                    <TextInput
-                      value={set.reps ? String(set.reps) : ''}
-                      onChangeText={(value) => updateSet(exercise.id, index, 'reps', value)}
-                      placeholder={String(exercise.targetReps)}
-                      keyboardType='number-pad'
-                      className='flex-1 border border-border-input bg-surface-card px-3 py-3 font-geist-mono text-ink'
-                    />
+                  </View>
+                </TouchableOpacity>
+                {isExpanded ? (
+                  <View className='px-4 pb-4'>
+                    <View className='gap-2'>
+                      <View className='flex-row px-1'>
+                        <Text className='w-8 font-geist-mono text-[10px] uppercase tracking-tight text-ink-muted'>
+                          Set
+                        </Text>
+                        <Text className='flex-1 pl-2 font-geist-mono text-[10px] uppercase tracking-tight text-ink-muted'>
+                          Kg
+                        </Text>
+                        <Text className='flex-1 pl-2 font-geist-mono text-[10px] uppercase tracking-tight text-ink-muted'>
+                          Reps
+                        </Text>
+                        <View className='w-8' />
+                      </View>
+                      {sets[exercise.id].map((set, index) => (
+                        <View
+                          key={`${exercise.id}-${index}`}
+                          className='flex-row items-center gap-2'
+                        >
+                          <Text className='w-8 text-center font-geist-mono text-xs text-ink-muted'>
+                            {index + 1}
+                          </Text>
+                          <TextInput
+                            value={set.weightKg ? String(set.weightKg) : ''}
+                            onChangeText={(value) =>
+                              updateSet(exercise.id, index, 'weightKg', value)
+                            }
+                            placeholder='0'
+                            keyboardType='decimal-pad'
+                            className='flex-1 rounded-2xl bg-surface-card px-3 py-3 font-geist-mono text-sm text-ink'
+                          />
+                          <TextInput
+                            value={set.reps ? String(set.reps) : ''}
+                            onChangeText={(value) => updateSet(exercise.id, index, 'reps', value)}
+                            placeholder={String(exercise.targetReps)}
+                            keyboardType='number-pad'
+                            className='flex-1 rounded-2xl bg-surface-card px-3 py-3 font-geist-mono text-sm text-ink'
+                          />
+                          <TouchableOpacity
+                            className='h-10 w-8 items-center justify-center rounded-2xl bg-surface-card'
+                            onPress={() => removeSet(exercise.id, index)}
+                            accessibilityRole='button'
+                            accessibilityLabel={`Eliminar serie ${index + 1} de ${exercise.name}`}
+                          >
+                            <Feather name='minus' size={16} color={Colors.ink.muted} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
                     <TouchableOpacity
-                      className='h-10 w-8 items-center justify-center border border-border-input bg-surface-card'
-                      onPress={() => removeSet(exercise.id, index)}
-                      accessibilityRole='button'
-                      accessibilityLabel={`Eliminar serie ${index + 1} de ${exercise.name}`}
+                      onPress={() => addSet(exercise.id)}
+                      className='mt-3 flex-row items-center self-start'
                     >
-                      <Feather name='minus' size={16} color={Colors.ink.DEFAULT} />
+                      <Feather name='plus' size={15} color={Colors.surface.dark} />
+                      <Text className='ml-1 font-geist-mono text-xs text-surface-dark'>
+                        Agregar serie
+                      </Text>
                     </TouchableOpacity>
                   </View>
-                ))}
+                ) : null}
               </View>
-              <TouchableOpacity
-                onPress={() => addSet(exercise.id)}
-                className='mt-4 flex-row items-center self-start'
-              >
-                <Feather name='plus' size={15} color={Colors.ink.DEFAULT} />
-                <Text className='ml-1 font-geist-mono text-xs text-ink'>Agregar serie</Text>
-              </TouchableOpacity>
-            </GraphPaperCard>
-          ))}
+            )
+          })}
         </View>
-        <View className='mt-6'>
-          <PrimaryButton
-            label='Terminar entrenamiento'
-            icon='check'
-            onPress={() =>
-              router.push({
-                pathname: '/ticket/create/[routineId]',
-                params: {
-                  routineId: routine.id,
-                  elapsed: String(Math.max(1, Math.round(seconds / 60))),
-                  sets: JSON.stringify(sets),
-                },
-              })
-            }
-          />
-        </View>
+
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: '/ticket/create/[routineId]',
+              params: {
+                routineId: routine.id,
+                elapsed: String(Math.max(1, Math.round(seconds / 60))),
+                sets: JSON.stringify(sets),
+              },
+            })
+          }
+          className='mt-8 items-center rounded-3xl bg-surface-dark py-4'
+        >
+          <Text className='font-geist-mono-semibold text-sm text-surface-card'>
+            Terminar entrenamiento
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   )
