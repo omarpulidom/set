@@ -3,7 +3,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 
-export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+export function TabBar({ state, navigation }: BottomTabBarProps) {
   const tabs = {
     index: {
       label: 'Tickets',

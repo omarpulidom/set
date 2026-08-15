@@ -1,6 +1,6 @@
 import { Redirect, Tabs } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { CustomTabBar } from '@/components/Elements/CustomTabBar'
+import { TabBar } from '@/components/Elements/TabBar'
 import { useAuth } from '@/components/Providers/AuthProvider'
 
 export default function TabsLayout() {
@@ -14,7 +14,7 @@ export default function TabsLayout() {
     <>
       <StatusBar hidden />
       <Tabs
-        tabBar={(props) => <CustomTabBar {...props} />}
+        tabBar={(props) => <TabBar {...props} />}
         screenOptions={{
           headerShown: false,
           animation: 'shift',
