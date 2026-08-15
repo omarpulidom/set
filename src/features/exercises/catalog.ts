@@ -1,5 +1,6 @@
 import catalog from '@/assets/exercises/data/exercises.json'
 import { exerciseImageById } from './exercise-image-map'
+import { exerciseVideoById } from './exercise-video-map'
 
 export type CatalogBodyPart = 'all' | 'back' | 'chest' | 'shoulders' | 'arms' | 'legs' | 'waist'
 
@@ -65,6 +66,10 @@ export function getCatalogExercise(exerciseId?: string) {
 
 export function imageForExercise(exerciseId: string) {
   return exerciseImageById[exerciseId]
+}
+
+export function videoForExercise(exerciseId: string) {
+  return exerciseVideoById[exerciseId]
 }
 
 export function normalizeExerciseSearch(value: string) {
