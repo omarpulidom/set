@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons'
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
+import type { BottomTabBarProps } from 'expo-router/js-tabs'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 

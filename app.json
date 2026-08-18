@@ -4,7 +4,10 @@
     "slug": "set",
     "version": "0.0.1",
     "scheme": "com.pm.set",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "plugins": [
       "expo-dev-client",
       "expo-router",
@@ -12,7 +15,9 @@
       [
         "expo-asset",
         {
-          "assets": ["./src/assets/images"]
+          "assets": [
+            "./src/assets/images"
+          ]
         }
       ],
       [
@@ -22,9 +27,9 @@
           "image": "./src/assets/appIcons/adaptive-icon.png",
           "imageWidth": 150
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
-    "newArchEnabled": true,
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
@@ -32,12 +37,9 @@
     "orientation": "portrait",
     "icon": "./src/assets/appIcons/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./src/assets/appIcons/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pm.set",
@@ -57,7 +59,10 @@
       },
       "package": "com.pm.set",
       "versionCode": 1,
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "router": {

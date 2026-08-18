@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons'
-import { useFocusEffect } from '@react-navigation/native'
 import { useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router/react-navigation'
 import { useCallback, useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
