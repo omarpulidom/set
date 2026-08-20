@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
-import { getMockRoutine } from '@/features/gym/mock-data'
 import type { WorkoutSet } from '@/features/gym/types'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketMockStore } from '@/features/tickets/mock-store'
 
 export default function CreateTicketScreen() {
@@ -19,13 +19,13 @@ export default function CreateTicketScreen() {
     elapsed?: string
     sets?: string
   }>()
-  const routine = getMockRoutine(routineId)
+  const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
   const [photoReady, setPhotoReady] = useState(false)
   const [signed, setSigned] = useState(false)
   const publishWorkout = useTicketMockStore((state) => state.publishWorkout)
 
   function finish() {
-    if (!photoReady || !signed) return
+    if (!photoReady || !signed || !routine) return
     let sets: Record<string, WorkoutSet[]> = {}
     try {
       sets = JSON.parse(serializedSets ?? '{}') as Record<string, WorkoutSet[]>
@@ -34,6 +34,33 @@ export default function CreateTicketScreen() {
     }
     publishWorkout(routine, Number(elapsed) || 1, sets)
     router.replace('/')
+  }
+
+  if (!routine) {
+    return (
+      <SafeAreaView
+        className='flex-1 bg-surface'
+        edges={[
+          'top',
+          'left',
+          'right',
+        ]}
+      >
+        <View className='flex-row items-center justify-between p-5'>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+          >
+            <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
+          </TouchableOpacity>
+        </View>
+        <View className='flex-1 items-center justify-center px-8'>
+          <Text className='text-center font-geist-mono text-sm text-ink-muted'>
+            Esta rutina ya no existe.
+          </Text>
+        </View>
+      </SafeAreaView>
+    )
   }
 
   return (

@@ -6,7 +6,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { WeekStrip } from '@/components/gym/GymUI'
-import { mockRoutines } from '@/features/gym/mock-data'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketMockStore } from '@/features/tickets/mock-store'
 
 function formatDuration(minutes: number) {
@@ -165,6 +165,7 @@ export default function TicketsTab() {
     [],
   )
   const { tickets, todayCompleted } = useTicketMockStore()
+  const routines = useRoutinesStore((state) => state.routines)
   const privateTickets = tickets.filter((ticket) => ticket.visibility === 'private')
 
   return (
@@ -294,31 +295,43 @@ export default function TicketsTab() {
             Elige una rutina
           </Text>
           <View className='mt-5'>
-            {mockRoutines.map((routine) => (
-              <TouchableOpacity
-                key={routine.id}
-                onPress={() => {
-                  routineSheetRef.current?.dismiss()
-                  router.push({
-                    pathname: '/workout/[routineId]',
-                    params: {
-                      routineId: routine.id,
-                    },
-                  })
-                }}
-                className='flex-row items-center justify-between border-t border-border-soft py-5'
-              >
-                <View>
-                  <Text className='font-geist-mono-semibold text-base text-surface-dark'>
-                    {routine.name}
-                  </Text>
-                  <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
-                    {routine.exercises.length} ejercicios
-                  </Text>
-                </View>
-                <Feather name='arrow-up-right' size={17} color={Colors.surface.dark} />
-              </TouchableOpacity>
-            ))}
+            {routines.length === 0 ? (
+              <View className='items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-4 py-10'>
+                <Feather name='clipboard' size={22} color={Colors.ink.soft} />
+                <Text className='mt-3 text-center font-geist-mono-semibold text-sm text-surface-dark'>
+                  Sin rutinas
+                </Text>
+                <Text className='mt-1 text-center font-geist-mono text-xs text-ink-muted'>
+                  Crea una para empezar a entrenar.
+                </Text>
+              </View>
+            ) : (
+              routines.map((routine) => (
+                <TouchableOpacity
+                  key={routine.id}
+                  onPress={() => {
+                    routineSheetRef.current?.dismiss()
+                    router.push({
+                      pathname: '/workout/[routineId]',
+                      params: {
+                        routineId: routine.id,
+                      },
+                    })
+                  }}
+                  className='flex-row items-center justify-between border-t border-border-soft py-5'
+                >
+                  <View>
+                    <Text className='font-geist-mono-semibold text-base text-surface-dark'>
+                      {routine.name}
+                    </Text>
+                    <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
+                      {routine.exercises.length} ejercicios
+                    </Text>
+                  </View>
+                  <Feather name='arrow-up-right' size={17} color={Colors.surface.dark} />
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </BottomSheetView>
       </BottomSheetModal>

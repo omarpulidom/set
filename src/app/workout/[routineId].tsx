@@ -5,8 +5,8 @@ import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { videoForExercise } from '@/features/exercises/catalog'
-import { getMockRoutine } from '@/features/gym/mock-data'
-import type { WorkoutSet } from '@/features/gym/types'
+import type { Routine, WorkoutSet } from '@/features/gym/types'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 
 function defaultSets(count: number): WorkoutSet[] {
   return Array.from(
@@ -20,21 +20,27 @@ function defaultSets(count: number): WorkoutSet[] {
   )
 }
 
+function useResolvedRoutine(routineId: string | undefined): Routine | undefined {
+  return useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
+}
+
 export default function WorkoutScreen() {
   const router = useRouter()
   const { routineId } = useLocalSearchParams<{
     routineId?: string
   }>()
-  const routine = getMockRoutine(routineId)
+  const routine = useResolvedRoutine(routineId)
   const [seconds, setSeconds] = useState(0)
-  const [expandedId, setExpandedId] = useState<string | undefined>(() => routine.exercises[0]?.id)
+  const [expandedId, setExpandedId] = useState<string | undefined>(() => routine?.exercises[0]?.id)
   const [sets, setSets] = useState<Record<string, WorkoutSet[]>>(() =>
-    Object.fromEntries(
-      routine.exercises.map((exercise) => [
-        exercise.id,
-        defaultSets(exercise.targetSets),
-      ]),
-    ),
+    routine
+      ? Object.fromEntries(
+          routine.exercises.map((exercise) => [
+            exercise.id,
+            defaultSets(exercise.targetSets),
+          ]),
+        )
+      : {},
   )
 
   function toggleExpanded(exerciseId: string) {
@@ -88,6 +94,33 @@ export default function WorkoutScreen() {
       ...current,
       [exerciseId]: current[exerciseId].filter((_, setIndex) => setIndex !== index),
     }))
+  }
+
+  if (!routine) {
+    return (
+      <SafeAreaView
+        className='flex-1 bg-surface'
+        edges={[
+          'top',
+          'left',
+          'right',
+        ]}
+      >
+        <View className='flex-row items-center justify-between px-5 pt-5'>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+          >
+            <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
+          </TouchableOpacity>
+        </View>
+        <View className='flex-1 items-center justify-center px-8'>
+          <Text className='text-center font-geist-mono text-sm text-ink-muted'>
+            Esta rutina ya no existe.
+          </Text>
+        </View>
+      </SafeAreaView>
+    )
   }
 
   return (

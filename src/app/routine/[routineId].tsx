@@ -1,9 +1,9 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
-import { getMockRoutine } from '@/features/gym/mock-data'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 import { formatMuscles } from '@/lib/funcs'
 
 export default function RoutineDetailScreen() {
@@ -11,8 +11,65 @@ export default function RoutineDetailScreen() {
   const { routineId } = useLocalSearchParams<{
     routineId?: string
   }>()
-  const routine = getMockRoutine(routineId)
+  const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
+
+  if (!routine) {
+    return (
+      <SafeAreaView
+        className='flex-1 bg-surface'
+        edges={[
+          'top',
+          'left',
+          'right',
+        ]}
+      >
+        <View className='flex-row items-center justify-between p-5'>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+          >
+            <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
+          </TouchableOpacity>
+        </View>
+        <View className='flex-1 items-center justify-center px-8'>
+          <Text className='text-center font-geist-mono text-sm text-ink-muted'>
+            Esta rutina ya no existe.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/routines')}
+            className='mt-6 items-center rounded-3xl bg-surface-dark px-6 py-3'
+          >
+            <Text className='font-geist-mono-semibold text-sm text-surface-card'>
+              Ver mis rutinas
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
   const totalSeries = routine.exercises.reduce((total, exercise) => total + exercise.targetSets, 0)
+
+  function handleDelete() {
+    Alert.alert(
+      'Eliminar rutina',
+      `¿Seguro que quieres eliminar "${routine.name}"? Se perderá la configuración.`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: () => {
+            useRoutinesStore.getState().deleteRoutine(routine.id)
+            router.replace('/routines')
+          },
+        },
+      ],
+    )
+  }
 
   return (
     <SafeAreaView
@@ -111,6 +168,11 @@ export default function RoutineDetailScreen() {
           <Text className='font-geist-mono-semibold text-sm text-surface-card'>
             Iniciar entrenamiento
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleDelete} className='mt-6 flex-row items-center self-start'>
+          <Feather name='trash-2' size={15} color={Colors.ink.soft} />
+          <Text className='ml-2 font-geist-mono text-xs text-ink-soft'>Eliminar rutina</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

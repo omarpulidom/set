@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { useDerivedPrimaryFocus, useDerivedRoutineFocus } from '@/features/exercises/muscles'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
-import { mockRoutines } from '@/features/gym/mock-data'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 import { formatMuscles } from '@/lib/funcs'
 
 export default function NewRoutineScreen() {
@@ -33,28 +33,23 @@ export default function NewRoutineScreen() {
   function saveRoutine() {
     if (!canSave) return
     const payload = exercises.map((exercise) => ({
-      id: exercise.id,
       catalogExerciseId: exercise.catalogExerciseId,
       name: exercise.name,
       targetSets: exercise.targetSets || 1,
       targetReps: exercise.targetReps || 1,
     }))
+    const { createRoutine, updateRoutine } = useRoutinesStore.getState()
     if (editingId) {
-      const index = mockRoutines.findIndex((item) => item.id === editingId)
-      if (index >= 0) {
-        mockRoutines[index] = {
-          ...mockRoutines[index],
-          name: name.trim(),
-          description: derivedFocus || mockRoutines[index].description,
-          exercises: payload,
-        }
-      }
-    } else {
-      mockRoutines.unshift({
-        id: `routine-${Date.now()}`,
+      const existing = useRoutinesStore.getState().getRoutine(editingId)
+      updateRoutine(editingId, {
         name: name.trim(),
-        description: derivedFocus || 'Rutina personalizada',
-        accent: Colors.mono.DEFAULT,
+        description: derivedFocus || existing?.description,
+        exercises: payload,
+      })
+    } else {
+      createRoutine({
+        name: name.trim(),
+        description: derivedFocus,
         exercises: payload,
       })
     }

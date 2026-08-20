@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { mockRoutines } from '@/features/gym/mock-data'
 import type { RoutineExercise } from '@/features/gym/types'
+import { useRoutinesStore } from '@/features/routines/routines-store'
 import type { CatalogExercise } from './catalog'
 
 type DraftRoutineExercise = RoutineExercise & {
@@ -59,7 +59,7 @@ export const useRoutineDraftStore = create<RoutineDraftStore>((set) => ({
       ),
     })),
   loadForEdit: (routineId) => {
-    const routine = mockRoutines.find((item) => item.id === routineId)
+    const routine = useRoutinesStore.getState().getRoutine(routineId)
     if (!routine) return
     set({
       editingId: routine.id,
