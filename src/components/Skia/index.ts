@@ -1,2 +1,7 @@
+export { crossHalftone, crossHalftoneDefaults } from './crossHalftone'
+export { DiamondHalftoneImage } from './DiamondHalftoneImage'
+export { diamondHalftone, diamondHalftoneDefaults } from './diamondHalftone'
 export { GrainyImage } from './GrainyImage'
+export { HalftoneDiamondCamera } from './HalftoneDiamondCamera'
 export { HoloCard } from './HoloCard'
+export { passthroughShader } from './passthroughShader'

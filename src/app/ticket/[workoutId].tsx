@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
-import { ScrollView, Share, Text, TouchableOpacity, View, Image } from 'react-native'
+import { Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { StarRating } from '@/components/Elements/StarRating'
+import { HalftoneDiamondCamera } from '@/components/Skia'
 import { TicketFrame } from '@/components/tickets/TicketFrame'
 import { useTicketMockStore } from '@/features/tickets/mock-store'
 
@@ -161,7 +162,12 @@ export default function TicketDetailScreen() {
               </Text>
 
               {/* Header */}
-              <View style={{ gap: sizes.content * 0.5, marginVertical: sizes.edge * 1.5 }}>
+              <View
+                style={{
+                  gap: sizes.content * 0.5,
+                  marginVertical: sizes.edge * 1.5,
+                }}
+              >
                 <View className='flex-row justify-between'>
                   <Text
                     className='font-merchant text-legacy-ticket'
@@ -199,6 +205,18 @@ export default function TicketDetailScreen() {
                   </Text>
                 </View>
               </View>
+
+              {/* Halftone diamond camera */}
+              {ticketRenderSize.width > 0 ? (
+                <View
+                  className='self-center'
+                  style={{
+                    marginVertical: sizes.gap,
+                  }}
+                >
+                  <HalftoneDiamondCamera width={ticketRenderSize.width} height={ticketRenderSize.width} />
+                </View>
+              ) : null}
 
               {/* Detailed info */}
               <View
