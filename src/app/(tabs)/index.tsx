@@ -146,7 +146,7 @@ export default function TicketsTab() {
         />
 
         <View className='mt-9 flex-row items-baseline justify-between'>
-          <Text className='font-geist-mono-medium text-xs tracking-[1.5px] text-ink-muted'>
+          <Text className='font-geist-mono-semibold text-xl tracking-[-1px] text-surface-dark'>
             ENTRENAMIENTOS
           </Text>
           <View className='flex-row rounded-full bg-surface-muted p-1'>
