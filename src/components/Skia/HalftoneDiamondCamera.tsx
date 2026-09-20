@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons'
-import { FilterMode, MipmapMode, Skia, TileMode } from '@shopify/react-native-skia'
-import { useEffect, useMemo, useState } from 'react'
+import { FilterMode, ImageFormat, MipmapMode, Skia, TileMode } from '@shopify/react-native-skia'
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { VisionCamera } from 'react-native-vision-camera'
-import { SkiaCamera } from 'react-native-vision-camera-skia'
+import { SkiaCamera, type SkiaCameraRef } from 'react-native-vision-camera-skia'
 import { AppFontNames } from '@/components/fonts/font-names'
 import { crossHalftone } from './crossHalftone'
 import {
@@ -18,6 +18,11 @@ type Props = {
   width: number
   height: number
   uniforms?: Partial<DiamondHalftoneUniforms>
+  isActive?: boolean
+}
+
+export type HalftoneDiamondCameraRef = {
+  takePhoto: () => string | undefined
 }
 
 type CameraPermission = 'not-determined' | 'authorized' | 'denied' | 'restricted'
@@ -38,173 +43,189 @@ type ShaderMode = 'detail' | 'cross' | 'passthrough'
  * try to marshal back to JS are forbidden in worklets, so we keep
  * the dispatch logic at module scope.
  */
-export function HalftoneDiamondCamera({ width, height, uniforms }: Props) {
-  const [permission, setPermission] = useState<CameraPermission>(
-    () => (VisionCamera.cameraPermissionStatus ?? 'not-determined') as CameraPermission,
-  )
-  const [modeIndex, setModeIndex] = useState<number>(0)
-  const modeShared = useSharedValue<number>(0)
+export const HalftoneDiamondCamera = forwardRef<HalftoneDiamondCameraRef, Props>(
+  function HalftoneDiamondCamera({ width, height, uniforms, isActive = true }, ref) {
+    const cameraRef = useRef<SkiaCameraRef>(null)
+    const [permission, setPermission] = useState<CameraPermission>(
+      () => (VisionCamera.cameraPermissionStatus ?? 'not-determined') as CameraPermission,
+    )
+    const [modeIndex, setModeIndex] = useState<number>(0)
+    const modeShared = useSharedValue<number>(0)
 
-  const _settings = useMemo(
-    () => ({
-      ...diamondHalftoneDefaults,
-      ...uniforms,
-    }),
-    [
-      uniforms,
-    ],
-  )
+    const _settings = useMemo(
+      () => ({
+        ...diamondHalftoneDefaults,
+        ...uniforms,
+      }),
+      [
+        uniforms,
+      ],
+    )
 
-  useEffect(() => {
-    let cancelled = false
-    if (permission === 'not-determined') {
-      VisionCamera.requestCameraPermission()
-        .then((granted) => {
-          if (cancelled) return
-          if (granted) {
-            setPermission('authorized')
-          } else {
-            setPermission((VisionCamera.cameraPermissionStatus ?? 'denied') as CameraPermission)
-          }
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setPermission('denied')
-          }
-        })
+    useEffect(() => {
+      let cancelled = false
+      if (permission === 'not-determined') {
+        VisionCamera.requestCameraPermission()
+          .then((granted) => {
+            if (cancelled) return
+            if (granted) {
+              setPermission('authorized')
+            } else {
+              setPermission((VisionCamera.cameraPermissionStatus ?? 'denied') as CameraPermission)
+            }
+          })
+          .catch(() => {
+            if (!cancelled) {
+              setPermission('denied')
+            }
+          })
+      }
+      return () => {
+        cancelled = true
+      }
+    }, [
+      permission,
+    ])
+
+    const cycleMode = () => {
+      setModeIndex((current) => {
+        const next = (current + 1) % 3
+        modeShared.value = next
+        return next
+      })
     }
-    return () => {
-      cancelled = true
+
+    useImperativeHandle(ref, () => ({
+      takePhoto: () => {
+        const snapshot = cameraRef.current?.takeSnapshot()
+        if (!snapshot) return undefined
+        try {
+          return `data:image/jpeg;base64,${snapshot.encodeToBase64(ImageFormat.JPEG, 82)}`
+        } finally {
+          snapshot.dispose()
+        }
+      },
+    }))
+
+    if (permission !== 'authorized') {
+      return (
+        <View
+          style={{
+            width,
+            height,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#000',
+          }}
+        >
+          <Text
+            style={{
+              color: '#fff',
+              textAlign: 'center',
+              fontSize: 12,
+            }}
+          >
+            {permission === 'denied' || permission === 'restricted'
+              ? 'Permiso de cámara denegado'
+              : 'Solicitando permiso de cámara…'}
+          </Text>
+        </View>
+      )
     }
-  }, [
-    permission,
-  ])
 
-  const cycleMode = () => {
-    setModeIndex((current) => {
-      const next = (current + 1) % 3
-      modeShared.value = next
-      return next
-    })
-  }
+    const activeMode: ShaderMode =
+      modeIndex === 1 ? 'cross' : modeIndex === 2 ? 'passthrough' : 'detail'
 
-  if (permission !== 'authorized') {
     return (
       <View
         style={{
           width,
           height,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#000',
+          position: 'relative',
         }}
       >
-        <Text
+        <SkiaCamera
+          ref={cameraRef}
+          device='back'
+          isActive={isActive}
+          enablePreviewSizedOutputBuffers
           style={{
-            color: '#fff',
-            textAlign: 'center',
-            fontSize: 12,
+            width,
+            height,
           }}
-        >
-          {permission === 'denied' || permission === 'restricted'
-            ? 'Permiso de cámara denegado'
-            : 'Solicitando permiso de cámara…'}
-        </Text>
-      </View>
-    )
-  }
-
-  const activeMode: ShaderMode =
-    modeIndex === 1 ? 'cross' : modeIndex === 2 ? 'passthrough' : 'detail'
-
-  return (
-    <View
-      style={{
-        width,
-        height,
-        position: 'relative',
-      }}
-    >
-      <SkiaCamera
-        device='back'
-        isActive
-        enablePreviewSizedOutputBuffers
-        style={{
-          width,
-          height,
-        }}
-        onFrame={(frame, render) => {
-          'worklet'
-          render(({ canvas, frameTexture }) => {
-            const paint = Skia.Paint()
-            const imageShader = frameTexture.makeShaderOptions(
-              TileMode.Clamp,
-              TileMode.Clamp,
-              FilterMode.Linear,
-              MipmapMode.None,
-            )
-            const idx = modeShared.value
-            // Inline dispatch — calling each factory directly is the
-            // only safe form inside a worklet. Closures that try to
-            // marshal back to JS will throw.
-            const detailUniforms = [
-              12,
-              1.2,
-              0,
-              0,
-              0.008,
-              0.5,
-              Math.PI / 4,
-              0,
-            ]
-            const shader =
-              idx === 1
-                ? crossHalftone.makeShaderWithChildren(detailUniforms, [
-                    imageShader,
-                  ])
-                : idx === 2
-                  ? passthroughShader.makeShaderWithChildren(
-                      [],
-                      [
-                        imageShader,
-                      ],
-                    )
-                  : diamondHalftone.makeShaderWithChildren(detailUniforms, [
+          onFrame={(frame, render) => {
+            'worklet'
+            render(({ canvas, frameTexture }) => {
+              const paint = Skia.Paint()
+              const imageShader = frameTexture.makeShaderOptions(
+                TileMode.Clamp,
+                TileMode.Clamp,
+                FilterMode.Linear,
+                MipmapMode.None,
+              )
+              const idx = modeShared.value
+              // Inline dispatch — calling each factory directly is the
+              // only safe form inside a worklet. Closures that try to
+              // marshal back to JS will throw.
+              const detailUniforms = [
+                12,
+                1.2,
+                0,
+                0,
+                0.008,
+                0.5,
+                Math.PI / 4,
+                0,
+              ]
+              const shader =
+                idx === 1
+                  ? crossHalftone.makeShaderWithChildren(detailUniforms, [
                       imageShader,
                     ])
-            paint.setShader(shader)
-            canvas.drawRect(
-              {
-                x: 0,
-                y: 0,
-                width: frameTexture.width(),
-                height: frameTexture.height(),
-              },
-              paint,
-            )
-          })
-          frame.dispose()
-        }}
-      />
-      <TouchableOpacity
-        accessibilityRole='button'
-        accessibilityLabel={`Cambiar modo de shader, actual ${activeMode}`}
-        onPress={cycleMode}
-        style={styles.badge}
-        activeOpacity={0.7}
-      >
-        <Feather
-          name={activeMode === 'detail' ? 'grid' : activeMode === 'cross' ? 'plus' : 'image'}
-          size={11}
-          color='#fff'
+                  : idx === 2
+                    ? passthroughShader.makeShaderWithChildren(
+                        [],
+                        [
+                          imageShader,
+                        ],
+                      )
+                    : diamondHalftone.makeShaderWithChildren(detailUniforms, [
+                        imageShader,
+                      ])
+              paint.setShader(shader)
+              canvas.drawRect(
+                {
+                  x: 0,
+                  y: 0,
+                  width: frameTexture.width(),
+                  height: frameTexture.height(),
+                },
+                paint,
+              )
+            })
+            frame.dispose()
+          }}
         />
-        <Text style={styles.badgeLabel}>
-          {activeMode === 'detail' ? 'DETAIL' : activeMode === 'cross' ? 'CROSS' : 'PASSTHROUGH'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  )
-}
+        <TouchableOpacity
+          accessibilityRole='button'
+          accessibilityLabel={`Cambiar modo de shader, actual ${activeMode}`}
+          onPress={cycleMode}
+          style={styles.badge}
+          activeOpacity={0.7}
+        >
+          <Feather
+            name={activeMode === 'detail' ? 'grid' : activeMode === 'cross' ? 'plus' : 'image'}
+            size={11}
+            color='#fff'
+          />
+          <Text style={styles.badgeLabel}>
+            {activeMode === 'detail' ? 'DETAIL' : activeMode === 'cross' ? 'CROSS' : 'PASSTHROUGH'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    )
+  },
+)
 
 const styles = StyleSheet.create({
   badge: {

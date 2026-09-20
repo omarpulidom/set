@@ -1,39 +1,86 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { useAuth } from '@/components/Providers/AuthProvider'
+import {
+  HalftoneDiamondCamera,
+  type HalftoneDiamondCameraRef,
+} from '@/components/Skia/HalftoneDiamondCamera'
 import type { WorkoutSet } from '@/features/gym/types'
 import { useRoutinesStore } from '@/features/routines/routines-store'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 export default function CreateTicketScreen() {
   const router = useRouter()
   const {
     routineId,
-    elapsed,
+    elapsedSeconds,
     sets: serializedSets,
   } = useLocalSearchParams<{
     routineId?: string
-    elapsed?: string
+    elapsedSeconds?: string
     sets?: string
   }>()
   const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
-  const [photoReady, setPhotoReady] = useState(false)
+  const { user } = useAuth()
+  const cameraRef = useRef<HalftoneDiamondCameraRef>(null)
+  const [photo, setPhoto] = useState<string>()
+  const [cameraSize, setCameraSize] = useState(0)
+  const [cameraOpen, setCameraOpen] = useState(false)
+  const [capturing, setCapturing] = useState(false)
   const [signed, setSigned] = useState(false)
-  const publishWorkout = useTicketMockStore((state) => state.publishWorkout)
+  const publishWorkout = useTicketsStore((state) => state.publishWorkout)
+
+  function takePhoto() {
+    if (capturing) return
+    setCapturing(true)
+    try {
+      const capturedPhoto = cameraRef.current?.takePhoto()
+      if (!capturedPhoto) {
+        Alert.alert('La cámara aún no está lista', 'Espera un momento e intenta de nuevo.')
+        return
+      }
+      setPhoto(capturedPhoto)
+    } catch {
+      Alert.alert('No se pudo tomar la foto', 'Revisa el permiso de cámara e intenta de nuevo.')
+    } finally {
+      setCapturing(false)
+    }
+  }
+
+  function handlePhotoPress() {
+    if (photo) {
+      setPhoto(undefined)
+      setCameraOpen(true)
+      return
+    }
+    if (!cameraOpen) {
+      setCameraOpen(true)
+      return
+    }
+    takePhoto()
+  }
 
   function finish() {
-    if (!photoReady || !signed || !routine) return
+    if (!photo || !signed || !routine) return
     let sets: Record<string, WorkoutSet[]> = {}
     try {
       sets = JSON.parse(serializedSets ?? '{}') as Record<string, WorkoutSet[]>
     } catch {
-      /* mock fallback */
+      Alert.alert('No se pudo crear el ticket', 'Los datos del entrenamiento están dañados.')
+      return
     }
-    publishWorkout(routine, Number(elapsed) || 1, sets)
-    router.replace('/')
+    const authorName = user ? `${user.firstName} ${user.lastName}`.trim() : 'Tú'
+    const ticketId = publishWorkout(routine, Number(elapsedSeconds) || 1, sets, photo, authorName)
+    router.replace({
+      pathname: '/ticket/[workoutId]',
+      params: {
+        workoutId: ticketId,
+      },
+    })
   }
 
   if (!routine) {
@@ -92,12 +139,25 @@ export default function CreateTicketScreen() {
         </Text>
 
         <TouchableOpacity
-          onPress={() => setPhotoReady(true)}
-          className={`mt-7 h-56 items-center justify-center rounded-3xl border border-dashed ${photoReady ? 'border-ink bg-surface-soft' : 'border-border-dashed bg-surface-muted'}`}
+          onPress={handlePhotoPress}
+          disabled={capturing}
+          onLayout={(event) => setCameraSize(event.nativeEvent.layout.width)}
+          className={`mt-7 h-56 items-center justify-center overflow-hidden rounded-3xl border border-dashed ${photo ? 'border-ink bg-surface-soft' : 'border-border-dashed bg-surface-muted'}`}
         >
-          <Feather name={photoReady ? 'check' : 'camera'} size={28} color={Colors.surface.dark} />
+          {cameraOpen && !photo && cameraSize > 0 ? (
+            <View className='absolute inset-0'>
+              <HalftoneDiamondCamera ref={cameraRef} width={cameraSize} height={224} isActive />
+            </View>
+          ) : null}
+          <Feather name={photo ? 'check' : 'camera'} size={28} color={Colors.surface.dark} />
           <Text className='mt-3 font-geist-mono-semibold text-sm text-surface-dark'>
-            {photoReady ? 'Foto mock seleccionada' : 'Agregar foto'}
+            {photo
+              ? 'Foto guardada'
+              : cameraOpen
+                ? capturing
+                  ? 'Guardando foto…'
+                  : 'Toca para capturar'
+                : 'Agregar foto'}
           </Text>
           <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
             obligatoria para el ticket social
@@ -130,19 +190,19 @@ export default function CreateTicketScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          disabled={!photoReady || !signed}
+          disabled={!photo || !signed}
           onPress={finish}
-          className={`mt-7 flex-row items-center justify-between rounded-3xl px-5 py-5 ${photoReady && signed ? 'bg-surface-dark' : 'bg-surface-soft'}`}
+          className={`mt-7 flex-row items-center justify-between rounded-3xl px-5 py-5 ${photo && signed ? 'bg-surface-dark' : 'bg-surface-soft'}`}
         >
           <Text
-            className={`font-geist-mono-semibold text-sm ${photoReady && signed ? 'text-surface-card' : 'text-ink-soft'}`}
+            className={`font-geist-mono-semibold text-sm ${photo && signed ? 'text-surface-card' : 'text-ink-soft'}`}
           >
             CREAR TICKETS
           </Text>
           <Feather
             name='arrow-up-right'
             size={18}
-            color={photoReady && signed ? Colors.surface.card : Colors.ink.soft}
+            color={photo && signed ? Colors.surface.card : Colors.ink.soft}
           />
         </TouchableOpacity>
       </ScrollView>
