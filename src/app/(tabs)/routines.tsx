@@ -42,21 +42,15 @@ export default function RoutinesTab() {
           </Text>
 
           {routines.length === 0 ? (
-            <View className='mt-4 items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-6 py-10'>
-              <Feather name='clipboard' size={26} color={Colors.ink.soft} />
-              <Text className='mt-4 text-center font-geist-mono-semibold text-sm text-surface-dark'>
-                Aún no tienes rutinas
-              </Text>
-              <Text className='mt-2 text-center font-geist-mono text-xs text-ink-muted'>
-                Crea tu primera rutina y guárdala para empezar a entrenar.
-              </Text>
+            <View className='mt-10'>
+              <Text className='font-geist-mono text-sm text-ink-muted'>Sin rutinas aún.</Text>
               <TouchableOpacity
                 onPress={() => router.push('/routine/new')}
-                className='mt-5 flex-row items-center rounded-3xl bg-surface-dark px-5 py-3'
+                className='mt-4 flex-row items-center self-start'
               >
-                <Feather name='plus' size={15} color={Colors.surface.card} />
-                <Text className='ml-2 font-geist-mono-semibold text-xs uppercase text-surface-card'>
-                  Nueva rutina
+                <Feather name='plus' size={15} color={Colors.surface.dark} />
+                <Text className='ml-2 font-geist-mono-semibold text-xs uppercase text-surface-dark'>
+                  Crear rutina
                 </Text>
               </TouchableOpacity>
             </View>
