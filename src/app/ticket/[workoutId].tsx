@@ -1,7 +1,15 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-native'
+import {
+  Image,
+  ScrollView,
+  Share,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { StarRating } from '@/components/Elements/StarRating'
@@ -94,11 +102,14 @@ function formatAuthor(authorName: string) {
 
 export default function TicketDetailScreen() {
   const router = useRouter()
+  const { width: windowWidth } = useWindowDimensions()
   const { workoutId } = useLocalSearchParams<{
     workoutId?: string
   }>()
   const tickets = useTicketsStore((state) => state.tickets)
   const ticket = tickets.find((item) => item.id === workoutId)
+  const ticketWidth = windowWidth - 40
+  const [activeTicketDesign, setActiveTicketDesign] = useState(0)
   const [ticketRenderSize, setTicketRenderSize] = useState({
     width: 0,
   })
@@ -130,205 +141,723 @@ export default function TicketDetailScreen() {
         'right',
       ]}
     >
+      <View className='flex-row items-center justify-between px-5 pt-5'>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+        >
+          <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            void Share.share({
+              message: `Set · ${ticket.routineName} · ${ticket.durationMinutes} min`,
+            })
+          }}
+          className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+        >
+          <Feather name='share' size={17} color={Colors.surface.dark} />
+        </TouchableOpacity>
+      </View>
       <ScrollView
         contentContainerStyle={{
-          padding: 20,
+          paddingHorizontal: 20,
+          paddingTop: 12,
           paddingBottom: 40,
         }}
       >
-        <View className='flex-row items-center justify-between'>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
-          >
-            <Feather name='arrow-left' size={19} color={Colors.surface.dark} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              void Share.share({
-                message: `Set · ${ticket.routineName} · ${ticket.durationMinutes} min`,
-              })
-            }}
-            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
-          >
-            <Feather name='share' size={17} color={Colors.surface.dark} />
-          </TouchableOpacity>
+        <View className='mt-4 flex-row justify-center gap-1.5'>
+          {[
+            0,
+            1,
+          ].map((index) => (
+            <View
+              key={index}
+              className={`h-1.5 rounded-full ${activeTicketDesign === index ? 'w-4 bg-surface-dark' : 'w-1.5 bg-ink-soft'}`}
+            />
+          ))}
         </View>
-        <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
-          {ticket.routineName}
-        </Text>
-
-        {/* Short ticket */}
-        <View
-          className='w-full bg-white'
-          onLayout={(e) => {
-            setTicketRenderSize({
-              width: e.nativeEvent.layout.width,
-            })
+        <ScrollView
+          horizontal
+          pagingEnabled
+          directionalLockEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(event) => {
+            const page = Math.round(event.nativeEvent.contentOffset.x / windowWidth)
+            setActiveTicketDesign(Math.max(0, Math.min(1, page)))
+          }}
+          style={{
+            width: windowWidth,
+            marginLeft: -20,
+            marginTop: 8,
+          }}
+          contentContainerStyle={{
+            alignItems: 'flex-start',
+            gap: 40,
+            paddingHorizontal: 20,
           }}
         >
-          <View className='flex-row'>
-            {Array.from({
-              length: 24,
-            }).map((_, i) => (
-              <View
-                key={i}
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeftWidth: sizes.edge,
-                  borderRightWidth: sizes.edge,
-                  borderTopWidth: sizes.edge * 0.75,
-                  borderLeftColor: 'transparent',
-                  borderRightColor: 'transparent',
-                  borderTopColor: Colors.surface.DEFAULT,
-                }}
-              />
-            ))}
-          </View>
+          {/* Short ticket */}
           <View
-            className='flex-row overflow-hidden'
+            className='bg-white'
             style={{
-              paddingHorizontal: sizes.gap * 0.57,
+              width: ticketWidth,
+            }}
+            onLayout={(e) => {
+              setTicketRenderSize({
+                width: e.nativeEvent.layout.width,
+              })
             }}
           >
-            {/* Info */}
-            <View
-              className='flex-1'
-              style={{
-                padding: sizes.gap * 2.3,
-              }}
-            >
-              {/* Logo */}
-              <View className='self-start'>
-                <Image
-                  source={require('@/assets/images/logo/logo.png')}
-                  resizeMode='contain'
+            <View className='flex-row'>
+              {Array.from({
+                length: 24,
+              }).map((_, i) => (
+                <View
+                  key={i}
                   style={{
-                    width: sizes.logo.short,
-                    height: sizes.logo.short,
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: sizes.edge,
+                    borderRightWidth: sizes.edge,
+                    borderTopWidth: sizes.edge * 0.75,
+                    borderLeftColor: 'transparent',
+                    borderRightColor: 'transparent',
+                    borderTopColor: Colors.surface.DEFAULT,
                   }}
                 />
-              </View>
-              {/* Separator */}
-              <Text
-                className='font-merchant text-center text-legacy-ticketDivider'
-                style={{
-                  fontSize: sizes.content,
-                  marginTop: sizes.edge * 2,
-                  alignSelf: 'center',
-                  marginHorizontal: -sizes.gap,
-                }}
-              >
-                ************************************************
-              </Text>
-
-              {/* Header */}
+              ))}
+            </View>
+            <View
+              className='flex-row overflow-hidden'
+              style={{
+                paddingHorizontal: sizes.gap * 0.57,
+              }}
+            >
+              {/* Info */}
               <View
+                className='flex-1'
                 style={{
-                  gap: sizes.content * 0.5,
-                  marginVertical: sizes.edge * 1.5,
+                  padding: sizes.gap * 2.3,
                 }}
               >
-                <View className='flex-row justify-between'>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content * 1.25,
-                    }}
-                  >
-                    GYM WORKOUT
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content * 1.25,
-                    }}
-                  >
-                    {formatAuthor(ticket.authorName)}
-                  </Text>
-                </View>
-                <View className='flex-row justify-between'>
-                  <Text
-                    className='font-merchant text-ink-muted'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {ticket.routineName.toUpperCase()}
-                  </Text>
-                  <Text
-                    className='font-merchant text-ink-muted'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {formatTicketDate(ticket.completedAt)}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Halftone diamond camera */}
-              {ticketRenderSize.width > 0 ? (
-                <View
-                  style={{
-                    width: '100%',
-                    marginVertical: sizes.gap * 1.5,
-                  }}
-                >
+                {/* Logo */}
+                <View className='self-start'>
                   <Image
-                    source={{
-                      uri: ticket.photo,
-                    }}
-                    resizeMode='cover'
+                    source={require('@/assets/images/logo/logo.png')}
+                    resizeMode='contain'
                     style={{
-                      width: '100%',
-                      aspectRatio: 1,
+                      width: sizes.logo.short,
+                      height: sizes.logo.short,
                     }}
                   />
                 </View>
-              ) : null}
+                {/* Separator */}
+                <Text
+                  className='font-merchant text-center text-legacy-ticketDivider'
+                  style={{
+                    fontSize: sizes.content,
+                    marginTop: sizes.edge * 2,
+                    alignSelf: 'center',
+                    marginHorizontal: -sizes.gap,
+                  }}
+                >
+                  ************************************************
+                </Text>
 
-              {/* Detailed info */}
-              <View
-                style={{
-                  gap: sizes.content * 2,
-                }}
-              >
-                <View className='flex-row justify-between w-full'>
-                  {/* Item - EXERCISES */}
-                  <View
-                    className='items-start'
-                    style={{
-                      gap: sizes.label * 0.75,
-                    }}
-                  >
+                {/* Header */}
+                <View
+                  style={{
+                    gap: sizes.content * 0.5,
+                    marginVertical: sizes.edge * 1.5,
+                  }}
+                >
+                  <View className='flex-row justify-between'>
+                    <Text
+                      className='font-merchant text-legacy-ticket'
+                      style={{
+                        fontSize: sizes.content * 1.25,
+                      }}
+                    >
+                      GYM WORKOUT
+                    </Text>
+                    <Text
+                      className='font-merchant text-legacy-ticket'
+                      style={{
+                        fontSize: sizes.content * 1.25,
+                      }}
+                    >
+                      {formatAuthor(ticket.authorName)}
+                    </Text>
+                  </View>
+                  <View className='flex-row justify-between'>
                     <Text
                       className='font-merchant text-ink-muted'
                       style={{
                         fontSize: sizes.content,
                       }}
                     >
-                      EXERCISES
+                      {ticket.routineName.toUpperCase()}
                     </Text>
                     <Text
-                      className='font-merchant text-legacy-ticket'
+                      className='font-merchant text-ink-muted'
                       style={{
-                        fontSize: sizes.label,
+                        fontSize: sizes.content,
                       }}
                     >
-                      {ticket.exercises.length}
+                      {formatTicketDate(ticket.completedAt)}
                     </Text>
                   </View>
-                  {/* Item - SETS */}
+                </View>
+
+                {/* Halftone diamond camera */}
+                {ticketRenderSize.width > 0 ? (
                   <View
-                    className='items-center'
                     style={{
-                      gap: sizes.label * 0.75,
+                      width: '100%',
+                      marginTop: sizes.gap * 1.5,
+                      marginBottom: sizes.edge * 1.5 + sizes.gap * 1.5,
+                    }}
+                  >
+                    <Image
+                      source={{
+                        uri: ticket.photo,
+                      }}
+                      resizeMode='cover'
+                      style={{
+                        width: '100%',
+                        aspectRatio: 1,
+                      }}
+                    />
+                  </View>
+                ) : null}
+
+                {/* Detailed info */}
+                <View
+                  style={{
+                    gap: sizes.content * 2,
+                  }}
+                >
+                  <View className='flex-row justify-between w-full'>
+                    {/* Item - EXERCISES */}
+                    <View
+                      className='items-start'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        EXERCISES
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {ticket.exercises.length}
+                      </Text>
+                    </View>
+                    {/* Item - SETS */}
+                    <View
+                      className='items-center'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        SETS
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {ticket.totalSets}
+                      </Text>
+                    </View>
+                    {/* Item - REPS */}
+                    <View
+                      className='items-center'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        REPS
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {ticket.totalReps}
+                      </Text>
+                    </View>
+                    {/* Item - DURATION */}
+                    <View
+                      className='items-end'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        DURATION
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {formatDuration(ticket.durationSeconds)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className='flex-row justify-between w-full'>
+                    {/* Item - COMPLETITION */}
+                    <View
+                      className='items-start'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        COMPLETITION
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {ticket.completionPercentage}%
+                      </Text>
+                    </View>
+                    {/* Item - VOLUME CHANGE */}
+                    <View
+                      className='items-center'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        VOLUME CHANGE
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {formatVolumeChange(ticket.volumeChangePercentage)}
+                      </Text>
+                    </View>
+                    {/* Item - TOTAL */}
+                    <View
+                      className='items-end'
+                      style={{
+                        gap: sizes.label * 0.75,
+                      }}
+                    >
+                      <Text
+                        className='font-merchant text-ink-muted'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        TOTAL
+                      </Text>
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.label,
+                        }}
+                      >
+                        {Math.round(ticket.volumeKg).toLocaleString('en-US')} kg
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Separator */}
+                <Text
+                  className='font-merchant text-center text-legacy-ticketDivider'
+                  style={{
+                    fontSize: sizes.content,
+                    alignSelf: 'center',
+                    marginTop: sizes.edge * 1.75,
+                    marginHorizontal: -sizes.gap,
+                  }}
+                >
+                  ************************************************
+                </Text>
+
+                {/* Footer - HOUR */}
+                <View
+                  style={{
+                    gap: sizes.content * 0.5,
+                    marginTop: sizes.gap * 1.5,
+                  }}
+                >
+                  <Text
+                    className='font-merchant text-center text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    OFFICE HOUR
+                  </Text>
+                  <Text
+                    className='font-merchant text-center text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    {formatOfficeTime(ticket.completedAt)}
+                  </Text>
+                </View>
+
+                <Text
+                  className='font-merchant text-center text-ink-muted'
+                  style={{
+                    fontSize: sizes.content,
+                    marginTop: sizes.gap * 1.75,
+                  }}
+                >
+                  Todo lo que repites, te convierte.
+                </Text>
+                <Text
+                  className='font-merchant text-center text-legacy-ticketDivider'
+                  style={{
+                    fontSize: sizes.content,
+                    marginTop: sizes.gap,
+                  }}
+                >
+                  #{String(ticket.sessionNumber).padStart(5, '0')}
+                </Text>
+              </View>
+            </View>
+            <View className='flex-row'>
+              {Array.from({
+                length: 24,
+              }).map((_, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: sizes.edge,
+                    borderRightWidth: sizes.edge,
+                    borderTopWidth: sizes.edge * 0.75,
+                    borderLeftColor: Colors.surface.DEFAULT,
+                    borderRightColor: Colors.surface.DEFAULT,
+                    borderTopColor: 'transparent',
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Detail ticket */}
+          <View
+            className='bg-white'
+            style={{
+              width: ticketWidth,
+            }}
+            onLayout={(e) => {
+              setTicketRenderSize({
+                width: e.nativeEvent.layout.width,
+              })
+            }}
+          >
+            <View className='flex-row'>
+              {Array.from({
+                length: 24,
+              }).map((_, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: sizes.edge,
+                    borderRightWidth: sizes.edge,
+                    borderTopWidth: sizes.edge * 0.75,
+                    borderLeftColor: 'transparent',
+                    borderRightColor: 'transparent',
+                    borderTopColor: Colors.surface.DEFAULT,
+                  }}
+                />
+              ))}
+            </View>
+            <View
+              className='flex-row overflow-hidden'
+              style={{
+                paddingHorizontal: sizes.gap * 0.57,
+                paddingVertical: sizes.gap * 1.5,
+              }}
+            >
+              {/* Info */}
+              <View
+                className='flex-1'
+                style={{
+                  padding: sizes.gap * 2.3,
+                }}
+              >
+                {/* Logo */}
+                <View className='self-center'>
+                  <Image
+                    source={require('@/assets/images/logo/logo.png')}
+                    resizeMode='contain'
+                    style={{
+                      width: sizes.logo.long,
+                      height: sizes.logo.long,
+                    }}
+                  />
+                </View>
+                {/* Data */}
+                <View
+                  style={{
+                    gap: sizes.gap * 0.75,
+                    marginBottom: sizes.gap * 3.5,
+                    marginTop: sizes.gap * 1.2,
+                  }}
+                >
+                  <Text
+                    className='font-merchant text-center text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    SESSION:#{ticket.sessionNumber}
+                  </Text>
+                  <Text
+                    className='font-merchant text-center text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    {formatTicketDate(ticket.completedAt)}
+                  </Text>
+                  <Text
+                    className='font-merchant text-center text-ink-muted'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    {ticket.routineName.toUpperCase()}
+                  </Text>
+                </View>
+                {/* Table */}
+                <View
+                  style={{
+                    position: 'relative',
+                  }}
+                >
+                  {/* Separator */}
+                  <Text
+                    className='font-merchant text-center text-legacy-ticketDivider'
+                    style={{
+                      fontSize: sizes.content,
+                      position: 'absolute',
+                      alignSelf: 'center',
+                      top: sizes.gap * 2.14,
+                      marginHorizontal: -sizes.gap,
+                    }}
+                  >
+                    ************************************************
+                  </Text>
+                  {/* Table */}
+                  <View className='w-full flex-row justify-between'>
+                    {/* Column 1 */}
+                    <View
+                      style={{
+                        gap: sizes.gap * 3.14,
+                        flex: 1,
+                        minWidth: 0,
+                        paddingRight: sizes.gap,
+                      }}
+                    >
+                      {/* Label */}
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        EXERCISES
+                      </Text>
+                      {/* List */}
+                      <View
+                        style={{
+                          gap: sizes.gap * 0.2,
+                        }}
+                      >
+                        {ticket.exercises.map((exercise, index) => (
+                          <Text
+                            key={exercise.id}
+                            numberOfLines={2}
+                            ellipsizeMode='tail'
+                            className='font-merchant text-legacy-ticket'
+                            style={{
+                              fontSize: sizes.content,
+                              lineHeight: sizes.content * 1.25,
+                              height: sizes.content * 2.65,
+                            }}
+                          >
+                            {index + 1}. {exercise.name.toUpperCase()}
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                    {/* Column 2 */}
+                    <View
+                      className='items-center'
+                      style={{
+                        gap: sizes.gap * 3.14,
+                        width: '25%',
+                      }}
+                    >
+                      {/* Label */}
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        SETS/REPS
+                      </Text>
+                      {/* List */}
+                      <View
+                        style={{
+                          gap: sizes.gap * 0.2,
+                        }}
+                      >
+                        {ticket.exercises.map((exercise) => (
+                          <Text
+                            key={exercise.id}
+                            className='font-merchant text-legacy-ticket'
+                            style={{
+                              fontSize: sizes.content,
+                              lineHeight: sizes.content * 1.25,
+                              height: sizes.content * 2.65,
+                            }}
+                          >
+                            {exercise.sets.length} x{' '}
+                            {exercise.sets.length
+                              ? Math.round(
+                                  exercise.sets.reduce((sum, set) => sum + set.reps, 0) /
+                                    exercise.sets.length,
+                                )
+                              : 0}
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                    {/* Column 3 */}
+                    <View
+                      className='items-end'
+                      style={{
+                        gap: sizes.gap * 3.14,
+                        width: '23%',
+                      }}
+                    >
+                      {/* Label */}
+                      <Text
+                        className='font-merchant text-legacy-ticket'
+                        style={{
+                          fontSize: sizes.content,
+                        }}
+                      >
+                        WEIGHT
+                      </Text>
+                      {/* List */}
+                      <View
+                        style={{
+                          gap: sizes.gap * 0.2,
+                          alignItems: 'center',
+                        }}
+                      >
+                        {ticket.exercises.map((exercise) => (
+                          <Text
+                            key={exercise.id}
+                            className='font-merchant text-legacy-ticket'
+                            style={{
+                              fontSize: sizes.content,
+                              lineHeight: sizes.content * 1.25,
+                              height: sizes.content * 2.65,
+                            }}
+                          >
+                            @{' '}
+                            {exercise.sets
+                              .reduce((maximum, set) => Math.max(maximum, set.weightKg), 0)
+                              .toFixed(1)}{' '}
+                            kg
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                </View>
+                {/* Separator */}
+                <Text
+                  className='font-merchant text-center text-legacy-ticketDivider'
+                  style={{
+                    fontSize: sizes.content,
+                    alignSelf: 'center',
+                    marginTop: sizes.gap * 3.14,
+                    marginHorizontal: -sizes.gap,
+                  }}
+                >
+                  ************************************************
+                </Text>
+                {/* Price info */}
+                <View
+                  style={{
+                    marginTop: sizes.gap,
+                    marginBottom: sizes.gap * 1.28,
+                  }}
+                >
+                  <View
+                    className='flex-row justify-between'
+                    style={{
+                      marginBottom: sizes.gap * 1.28,
                     }}
                   >
                     <Text
-                      className='font-merchant text-ink-muted'
+                      className='font-merchant text-legacy-ticket'
                       style={{
                         fontSize: sizes.content,
                       }}
@@ -338,21 +867,20 @@ export default function TicketDetailScreen() {
                     <Text
                       className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.label,
+                        fontSize: sizes.content,
                       }}
                     >
                       {ticket.totalSets}
                     </Text>
                   </View>
-                  {/* Item - REPS */}
                   <View
-                    className='items-center'
+                    className='flex-row justify-between'
                     style={{
-                      gap: sizes.label * 0.75,
+                      marginBottom: sizes.gap * 1.28,
                     }}
                   >
                     <Text
-                      className='font-merchant text-ink-muted'
+                      className='font-merchant text-legacy-ticket'
                       style={{
                         fontSize: sizes.content,
                       }}
@@ -362,21 +890,20 @@ export default function TicketDetailScreen() {
                     <Text
                       className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.label,
+                        fontSize: sizes.content,
                       }}
                     >
                       {ticket.totalReps}
                     </Text>
                   </View>
-                  {/* Item - DURATION */}
                   <View
-                    className='items-end'
+                    className='flex-row justify-between'
                     style={{
-                      gap: sizes.label * 0.75,
+                      marginBottom: sizes.gap * 1.28,
                     }}
                   >
                     <Text
-                      className='font-merchant text-ink-muted'
+                      className='font-merchant text-legacy-ticket'
                       style={{
                         fontSize: sizes.content,
                       }}
@@ -386,49 +913,18 @@ export default function TicketDetailScreen() {
                     <Text
                       className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.label,
+                        fontSize: sizes.content,
                       }}
                     >
                       {formatDuration(ticket.durationSeconds)}
                     </Text>
                   </View>
-                </View>
-                <View className='flex-row justify-between w-full'>
-                  {/* Item - COMPLETITION */}
-                  <View
-                    className='items-start'
-                    style={{
-                      gap: sizes.label * 0.75,
-                    }}
-                  >
-                    <Text
-                      className='font-merchant text-ink-muted'
-                      style={{
-                        fontSize: sizes.content,
-                      }}
-                    >
-                      COMPLETITION
-                    </Text>
+                  <View className='flex-row justify-between'>
                     <Text
                       className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.label,
-                      }}
-                    >
-                      {ticket.completionPercentage}%
-                    </Text>
-                  </View>
-                  {/* Item - VOLUME CHANGE */}
-                  <View
-                    className='items-center'
-                    style={{
-                      gap: sizes.label * 0.75,
-                    }}
-                  >
-                    <Text
-                      className='font-merchant text-ink-muted'
-                      style={{
                         fontSize: sizes.content,
+                        marginBottom: sizes.gap * 2.28,
                       }}
                     >
                       VOLUME CHANGE
@@ -436,23 +932,17 @@ export default function TicketDetailScreen() {
                     <Text
                       className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.label,
+                        fontSize: sizes.content,
                       }}
                     >
                       {formatVolumeChange(ticket.volumeChangePercentage)}
                     </Text>
                   </View>
-                  {/* Item - TOTAL */}
-                  <View
-                    className='items-end'
-                    style={{
-                      gap: sizes.label * 0.75,
-                    }}
-                  >
+                  <View className='flex-row justify-between'>
                     <Text
-                      className='font-merchant text-ink-muted'
+                      className='font-merchant text-legacy-ticket'
                       style={{
-                        fontSize: sizes.content,
+                        fontSize: sizes.label,
                       }}
                     >
                       TOTAL
@@ -467,35 +957,52 @@ export default function TicketDetailScreen() {
                     </Text>
                   </View>
                 </View>
-              </View>
-
-              {/* Separator */}
-              <Text
-                className='font-merchant text-center text-legacy-ticketDivider'
-                style={{
-                  fontSize: sizes.content,
-                  alignSelf: 'center',
-                  marginTop: sizes.edge * 1.75,
-                  marginHorizontal: -sizes.gap,
-                }}
-              >
-                ************************************************
-              </Text>
-
-              {/* Footer - HOUR */}
-              <View
-                style={{
-                  gap: sizes.content * 0.5,
-                  marginTop: sizes.gap * 1.5,
-                }}
-              >
+                {/* Rating */}
+                <View className='self-center'>
+                  <StarRating
+                    percentage={ticket.completionPercentage / 100}
+                    size={sizes.label * 1.33}
+                    color={Colors.legacy.ticket}
+                  />
+                </View>
                 <Text
                   className='font-merchant text-center text-legacy-ticket'
                   style={{
-                    fontSize: sizes.content,
+                    fontSize: sizes.label,
+                    marginVertical: sizes.gap * 1.28,
+                    alignSelf: 'center',
+                    marginHorizontal: -sizes.gap,
                   }}
                 >
-                  OFFICE HOUR
+                  ************** CHECK CLOSED **************
+                </Text>
+                <View className='flex-row justify-between'>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    {formatClosedTime(ticket.completedAt)}
+                  </Text>
+                  <Text
+                    className='font-merchant text-legacy-ticket'
+                    style={{
+                      fontSize: sizes.content,
+                    }}
+                  >
+                    {formatAuthor(ticket.authorName)}
+                  </Text>
+                </View>
+                <Text
+                  className='font-barcode-39 text-center text-legacy-ticket'
+                  style={{
+                    fontSize: sizes.barcode,
+                    marginTop: sizes.gap * 0.75,
+                    marginBottom: -sizes.gap,
+                  }}
+                >
+                  {String(ticket.sessionNumber).padStart(18, '1')}
                 </Text>
                 <Text
                   className='font-merchant text-center text-legacy-ticket'
@@ -503,500 +1010,40 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  {formatOfficeTime(ticket.completedAt)}
-                </Text>
-              </View>
-
-              <Text
-                className='font-merchant text-center text-ink-muted'
-                style={{
-                  fontSize: sizes.content,
-                  marginTop: sizes.gap * 1.75,
-                }}
-              >
-                Todo lo que repites, te convierte.
-              </Text>
-              <Text
-                className='font-merchant text-center text-legacy-ticketDivider'
-                style={{
-                  fontSize: sizes.content,
-                  marginTop: sizes.gap,
-                }}
-              >
-                #{String(ticket.sessionNumber).padStart(5, '0')}
-              </Text>
-            </View>
-          </View>
-          <View className='flex-row'>
-            {Array.from({
-              length: 24,
-            }).map((_, i) => (
-              <View
-                key={i}
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeftWidth: sizes.edge,
-                  borderRightWidth: sizes.edge,
-                  borderTopWidth: sizes.edge * 0.75,
-                  borderLeftColor: Colors.surface.DEFAULT,
-                  borderRightColor: Colors.surface.DEFAULT,
-                  borderTopColor: 'transparent',
-                }}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Detail ticket */}
-        <View
-          className='w-full bg-white'
-          onLayout={(e) => {
-            setTicketRenderSize({
-              width: e.nativeEvent.layout.width,
-            })
-          }}
-        >
-          <View className='flex-row'>
-            {Array.from({
-              length: 24,
-            }).map((_, i) => (
-              <View
-                key={i}
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeftWidth: sizes.edge,
-                  borderRightWidth: sizes.edge,
-                  borderTopWidth: sizes.edge * 0.75,
-                  borderLeftColor: 'transparent',
-                  borderRightColor: 'transparent',
-                  borderTopColor: Colors.surface.DEFAULT,
-                }}
-              />
-            ))}
-          </View>
-          <View
-            className='flex-row overflow-hidden'
-            style={{
-              paddingHorizontal: sizes.gap * 0.57,
-              paddingVertical: sizes.gap * 1.5,
-            }}
-          >
-            {/* Info */}
-            <View
-              className='flex-1'
-              style={{
-                padding: sizes.gap * 2.3,
-              }}
-            >
-              {/* Logo */}
-              <View className='self-center'>
-                <Image
-                  source={require('@/assets/images/logo/logo.png')}
-                  resizeMode='contain'
-                  style={{
-                    width: sizes.logo.long,
-                    height: sizes.logo.long,
-                  }}
-                />
-              </View>
-              {/* Data */}
-              <View
-                style={{
-                  gap: sizes.gap * 0.75,
-                  marginBottom: sizes.gap * 3.5,
-                  marginTop: sizes.gap * 1.2,
-                }}
-              >
-                <Text
-                  className='font-merchant text-center text-legacy-ticket'
-                  style={{
-                    fontSize: sizes.content,
-                  }}
-                >
-                  SESSION:#{ticket.sessionNumber}
-                </Text>
-                <Text
-                  className='font-merchant text-center text-legacy-ticket'
-                  style={{
-                    fontSize: sizes.content,
-                  }}
-                >
-                  {formatTicketDate(ticket.completedAt)}
+                  Thanks for using SET!
                 </Text>
                 <Text
                   className='font-merchant text-center text-ink-muted'
                   style={{
                     fontSize: sizes.content,
+                    marginTop: sizes.gap * 1.75,
                   }}
                 >
-                  {ticket.routineName.toUpperCase()}
+                  Todo lo que repites, te convierte.
                 </Text>
               </View>
-              {/* Table */}
-              <View
-                style={{
-                  position: 'relative',
-                }}
-              >
-                {/* Separator */}
-                <Text
-                  className='font-merchant text-center text-legacy-ticketDivider'
-                  style={{
-                    fontSize: sizes.content,
-                    position: 'absolute',
-                    alignSelf: 'center',
-                    top: sizes.gap * 2.14,
-                    marginHorizontal: -sizes.gap,
-                  }}
-                >
-                  ************************************************
-                </Text>
-                {/* Table */}
-                <View className='w-full flex-row justify-between'>
-                  {/* Column 1 */}
-                  <View
-                    style={{
-                      gap: sizes.gap * 3.14,
-                      flex: 1,
-                      minWidth: 0,
-                      paddingRight: sizes.gap,
-                    }}
-                  >
-                    {/* Label */}
-                    <Text
-                      className='font-merchant text-legacy-ticket'
-                      style={{
-                        fontSize: sizes.content,
-                      }}
-                    >
-                      EXERCISES
-                    </Text>
-                    {/* List */}
-                    <View
-                      style={{
-                        gap: sizes.gap,
-                      }}
-                    >
-                      {ticket.exercises.map((exercise, index) => (
-                        <Text
-                          key={exercise.id}
-                          numberOfLines={2}
-                          ellipsizeMode='tail'
-                          className='font-merchant text-legacy-ticket'
-                          style={{
-                            fontSize: sizes.content,
-                            lineHeight: sizes.content * 1.15,
-                            height: sizes.content * 2.3,
-                          }}
-                        >
-                          {index + 1}. {exercise.name.toUpperCase()}
-                        </Text>
-                      ))}
-                    </View>
-                  </View>
-                  {/* Column 2 */}
-                  <View
-                    className='items-center'
-                    style={{
-                      gap: sizes.gap * 3.14,
-                      width: '25%',
-                    }}
-                  >
-                    {/* Label */}
-                    <Text
-                      className='font-merchant text-legacy-ticket'
-                      style={{
-                        fontSize: sizes.content,
-                      }}
-                    >
-                      SETS/REPS
-                    </Text>
-                    {/* List */}
-                    <View
-                      style={{
-                        gap: sizes.gap,
-                      }}
-                    >
-                      {ticket.exercises.map((exercise) => (
-                        <Text
-                          key={exercise.id}
-                          className='font-merchant text-legacy-ticket'
-                          style={{
-                            fontSize: sizes.content,
-                            lineHeight: sizes.content * 1.15,
-                            height: sizes.content * 2.3,
-                          }}
-                        >
-                          {exercise.sets.length} x{' '}
-                          {exercise.sets.length
-                            ? Math.round(
-                                exercise.sets.reduce((sum, set) => sum + set.reps, 0) /
-                                  exercise.sets.length,
-                              )
-                            : 0}
-                        </Text>
-                      ))}
-                    </View>
-                  </View>
-                  {/* Column 3 */}
-                  <View
-                    className='items-end'
-                    style={{
-                      gap: sizes.gap * 3.14,
-                      width: '23%',
-                    }}
-                  >
-                    {/* Label */}
-                    <Text
-                      className='font-merchant text-legacy-ticket'
-                      style={{
-                        fontSize: sizes.content,
-                      }}
-                    >
-                      WEIGHT
-                    </Text>
-                    {/* List */}
-                    <View
-                      style={{
-                        gap: sizes.gap,
-                        alignItems: 'center',
-                      }}
-                    >
-                      {ticket.exercises.map((exercise) => (
-                        <Text
-                          key={exercise.id}
-                          className='font-merchant text-legacy-ticket'
-                          style={{
-                            fontSize: sizes.content,
-                            lineHeight: sizes.content * 1.15,
-                            height: sizes.content * 2.3,
-                          }}
-                        >
-                          @{' '}
-                          {exercise.sets
-                            .reduce((maximum, set) => Math.max(maximum, set.weightKg), 0)
-                            .toFixed(1)}{' '}
-                          kg
-                        </Text>
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              </View>
-              {/* Separator */}
-              <Text
-                className='font-merchant text-center text-legacy-ticketDivider'
-                style={{
-                  fontSize: sizes.content,
-                  alignSelf: 'center',
-                  marginTop: sizes.gap * 3.14,
-                  marginHorizontal: -sizes.gap,
-                }}
-              >
-                ************************************************
-              </Text>
-              {/* Price info */}
-              <View
-                style={{
-                  marginTop: sizes.gap,
-                  marginBottom: sizes.gap * 1.28,
-                }}
-              >
+            </View>
+            <View className='flex-row'>
+              {Array.from({
+                length: 24,
+              }).map((_, i) => (
                 <View
-                  className='flex-row justify-between'
+                  key={i}
                   style={{
-                    marginBottom: sizes.gap * 1.28,
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: sizes.edge,
+                    borderRightWidth: sizes.edge,
+                    borderTopWidth: sizes.edge * 0.75,
+                    borderLeftColor: Colors.surface.DEFAULT,
+                    borderRightColor: Colors.surface.DEFAULT,
+                    borderTopColor: 'transparent',
                   }}
-                >
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    SETS
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {ticket.totalSets}
-                  </Text>
-                </View>
-                <View
-                  className='flex-row justify-between'
-                  style={{
-                    marginBottom: sizes.gap * 1.28,
-                  }}
-                >
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    REPS
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {ticket.totalReps}
-                  </Text>
-                </View>
-                <View
-                  className='flex-row justify-between'
-                  style={{
-                    marginBottom: sizes.gap * 1.28,
-                  }}
-                >
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    DURATION
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {formatDuration(ticket.durationSeconds)}
-                  </Text>
-                </View>
-                <View className='flex-row justify-between'>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                      marginBottom: sizes.gap * 2.28,
-                    }}
-                  >
-                    VOLUME CHANGE
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.content,
-                    }}
-                  >
-                    {formatVolumeChange(ticket.volumeChangePercentage)}
-                  </Text>
-                </View>
-                <View className='flex-row justify-between'>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.label,
-                    }}
-                  >
-                    TOTAL
-                  </Text>
-                  <Text
-                    className='font-merchant text-legacy-ticket'
-                    style={{
-                      fontSize: sizes.label,
-                    }}
-                  >
-                    {Math.round(ticket.volumeKg).toLocaleString('en-US')} kg
-                  </Text>
-                </View>
-              </View>
-              {/* Rating */}
-              <View className='self-center'>
-                <StarRating
-                  percentage={ticket.completionPercentage / 100}
-                  size={sizes.label * 1.33}
-                  color={Colors.legacy.ticket}
                 />
-              </View>
-              <Text
-                className='font-merchant text-center text-legacy-ticket'
-                style={{
-                  fontSize: sizes.label,
-                  marginVertical: sizes.gap * 1.28,
-                  alignSelf: 'center',
-                  marginHorizontal: -sizes.gap,
-                }}
-              >
-                ************** CHECK CLOSED **************
-              </Text>
-              <View className='flex-row justify-between'>
-                <Text
-                  className='font-merchant text-legacy-ticket'
-                  style={{
-                    fontSize: sizes.content,
-                  }}
-                >
-                  {formatClosedTime(ticket.completedAt)}
-                </Text>
-                <Text
-                  className='font-merchant text-legacy-ticket'
-                  style={{
-                    fontSize: sizes.content,
-                  }}
-                >
-                  {formatAuthor(ticket.authorName)}
-                </Text>
-              </View>
-              <Text
-                className='font-barcode-39 text-center text-legacy-ticket'
-                style={{
-                  fontSize: sizes.barcode,
-                  marginTop: sizes.gap * 0.75,
-                  marginBottom: -sizes.gap,
-                }}
-              >
-                {String(ticket.sessionNumber).padStart(18, '1')}
-              </Text>
-              <Text
-                className='font-merchant text-center text-legacy-ticket'
-                style={{
-                  fontSize: sizes.content,
-                }}
-              >
-                Thanks for using SET!
-              </Text>
-              <Text
-                className='font-merchant text-center text-ink-muted'
-                style={{
-                  fontSize: sizes.content,
-                  marginTop: sizes.gap * 1.75,
-                }}
-              >
-                Todo lo que repites, te convierte.
-              </Text>
+              ))}
             </View>
           </View>
-          <View className='flex-row'>
-            {Array.from({
-              length: 24,
-            }).map((_, i) => (
-              <View
-                key={i}
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeftWidth: sizes.edge,
-                  borderRightWidth: sizes.edge,
-                  borderTopWidth: sizes.edge * 0.75,
-                  borderLeftColor: Colors.surface.DEFAULT,
-                  borderRightColor: Colors.surface.DEFAULT,
-                  borderTopColor: 'transparent',
-                }}
-              />
-            ))}
-          </View>
-        </View>
+        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   )
