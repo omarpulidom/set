@@ -8,7 +8,6 @@ import { Colors } from '@/components/colors'
 import { WeekStrip } from '@/components/gym/GymUI'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
-import { featureFlags } from '@/lib/feature-flags'
 import { completedDayKeys, dayKey } from '@/lib/funcs/date'
 
 function formatDuration(minutes: number) {
@@ -141,26 +140,10 @@ export default function TicketsTab() {
           paddingBottom: 40,
         }}
       >
-        <View className='flex-row items-center justify-between'>
-          <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
-            Tickets
-          </Text>
-          {featureFlags.circles ? (
-            <TouchableOpacity
-              onPress={() => router.push('/circles')}
-              className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
-            >
-              <Feather name='menu' size={19} color={Colors.surface.dark} />
-            </TouchableOpacity>
-          ) : null}
-        </View>
-
-        <View className='mt-7'>
-          <WeekStrip
-            completedDays={completedDays}
-            onCurrentDayPress={() => routineSheetRef.current?.present()}
-          />
-        </View>
+        <WeekStrip
+          completedDays={completedDays}
+          onCurrentDayPress={() => routineSheetRef.current?.present()}
+        />
 
         <View className='mt-9 flex-row items-baseline justify-between'>
           <Text className='font-geist-mono-medium text-xs tracking-[1.5px] text-ink-muted'>
