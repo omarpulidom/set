@@ -7,95 +7,33 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { WeekStrip } from '@/components/gym/GymUI'
 import { useRoutinesStore } from '@/features/routines/routines-store'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
+import { completedDayKeys, dayKey } from '@/lib/funcs/date'
 
 function formatDuration(minutes: number) {
   return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')} hrs`
 }
 
-const months = [
-  {
-    name: 'AGO',
-    completedDays: [
-      1,
-      2,
-      5,
-      8,
-      11,
-      14,
-      18,
-      22,
-      25,
-      29,
-    ],
-  },
-  {
-    name: 'JUL',
-    completedDays: [
-      3,
-      6,
-      7,
-      10,
-      15,
-      19,
-      23,
-      26,
-      30,
-    ],
-  },
-  {
-    name: 'JUN',
-    completedDays: [
-      2,
-      4,
-      9,
-      13,
-      16,
-      20,
-      24,
-      27,
-    ],
-  },
-  {
-    name: 'MAY',
-    completedDays: [
-      1,
-      5,
-      8,
-      12,
-      17,
-      21,
-      25,
-      28,
-    ],
-  },
-  {
-    name: 'ABR',
-    completedDays: [
-      3,
-      6,
-      10,
-      14,
-      18,
-      23,
-      26,
-    ],
-  },
-  {
-    name: 'MAR',
-    completedDays: [
-      2,
-      7,
-      11,
-      15,
-      20,
-      24,
-      29,
-    ],
-  },
-]
+function formatCompletedAt(isoDate: string) {
+  return new Intl.DateTimeFormat('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(isoDate))
+}
 
-function MonthlyTrainingGrid() {
+function recentMonths() {
+  const today = new Date()
+  return Array.from(
+    {
+      length: 6,
+    },
+    (_, index) => new Date(today.getFullYear(), today.getMonth() - index, 1),
+  )
+}
+
+function MonthlyTrainingGrid({ completedDays }: { completedDays: Set<string> }) {
   return (
     <View className='mt-4 flex-row gap-3'>
       {[
@@ -104,50 +42,69 @@ function MonthlyTrainingGrid() {
         2,
       ].map((column) => (
         <View key={column} className='flex-1 gap-3'>
-          {months
+          {recentMonths()
             .filter((_, index) => index % 3 === column)
-            .map((month) => (
-              <View key={month.name} className='aspect-square rounded-3xl bg-surface-muted p-3'>
-                <View className='flex-row items-center justify-between px-1 pt-1'>
-                  <Text className='font-geist-mono text-xs tracking-[1px] text-ink-muted'>
-                    {month.name}
-                  </Text>
-                  <Text className='font-geist-mono text-[10px] text-ink-muted'>2026</Text>
+            .map((month) => {
+              const year = month.getFullYear()
+              const monthIndex = month.getMonth()
+              const firstDayOffset = (month.getDay() + 6) % 7
+              const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+              const monthName = new Intl.DateTimeFormat('es-MX', {
+                month: 'short',
+              })
+                .format(month)
+                .replace('.', '')
+                .toUpperCase()
+
+              return (
+                <View
+                  key={`${year}-${monthIndex}`}
+                  className='aspect-square rounded-3xl bg-surface-muted p-3'
+                >
+                  <View className='flex-row items-center justify-between px-1 pt-1'>
+                    <Text className='font-geist-mono text-xs tracking-[1px] text-ink-muted'>
+                      {monthName}
+                    </Text>
+                    <Text className='font-geist-mono text-[10px] text-ink-muted'>{year}</Text>
+                  </View>
+                  <View className='mt-auto gap-1'>
+                    {Array.from(
+                      {
+                        length: 6,
+                      },
+                      (_, week) => (
+                        <View key={week} className='flex-row gap-1'>
+                          {Array.from(
+                            {
+                              length: 7,
+                            },
+                            (_, weekday) => {
+                              const date = week * 7 + weekday - firstDayOffset + 1
+                              const exists = date >= 1 && date <= daysInMonth
+                              const completed =
+                                exists &&
+                                completedDays.has(dayKey(new Date(year, monthIndex, date)))
+                              return (
+                                <View
+                                  key={`${week}-${weekday}`}
+                                  className={`aspect-square flex-1 rounded-sm ${
+                                    !exists
+                                      ? 'bg-transparent'
+                                      : completed
+                                        ? 'bg-surface-dark'
+                                        : 'bg-surface-card'
+                                  }`}
+                                />
+                              )
+                            },
+                          )}
+                        </View>
+                      ),
+                    )}
+                  </View>
                 </View>
-                <View className='mt-auto gap-1'>
-                  {Array.from(
-                    {
-                      length: 5,
-                    },
-                    (_, week) => (
-                      <View key={week} className='flex-row gap-1'>
-                        {Array.from(
-                          {
-                            length: 7,
-                          },
-                          (_, day) => {
-                            const date = week * 7 + day + 1
-                            const exists = date <= 31
-                            return (
-                              <View
-                                key={date}
-                                className={`aspect-square flex-1 rounded-sm ${
-                                  !exists
-                                    ? 'bg-transparent'
-                                    : month.completedDays.includes(date)
-                                      ? 'bg-surface-dark'
-                                      : 'bg-surface-card'
-                                }`}
-                              />
-                            )
-                          },
-                        )}
-                      </View>
-                    ),
-                  )}
-                </View>
-              </View>
-            ))}
+              )
+            })}
         </View>
       ))}
     </View>
@@ -164,9 +121,9 @@ export default function TicketsTab() {
     ],
     [],
   )
-  const { tickets, todayCompleted } = useTicketMockStore()
+  const tickets = useTicketsStore((state) => state.tickets)
   const routines = useRoutinesStore((state) => state.routines)
-  const privateTickets = tickets.filter((ticket) => ticket.visibility === 'private')
+  const completedDays = completedDayKeys(tickets)
 
   return (
     <SafeAreaView
@@ -184,11 +141,9 @@ export default function TicketsTab() {
         }}
       >
         <View className='flex-row items-center justify-between'>
-          <View>
-            <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
-              Tickets
-            </Text>
-          </View>
+          <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
+            Tickets
+          </Text>
           <TouchableOpacity
             onPress={() => router.push('/circles')}
             className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
@@ -199,7 +154,7 @@ export default function TicketsTab() {
 
         <View className='mt-7'>
           <WeekStrip
-            todayCompleted={todayCompleted}
+            completedDays={completedDays}
             onCurrentDayPress={() => routineSheetRef.current?.present()}
           />
         </View>
@@ -231,55 +186,69 @@ export default function TicketsTab() {
             </TouchableOpacity>
           </View>
         </View>
+
         {viewMode === 'grid' ? (
-          <View className='mt-4 flex-row gap-3'>
-            {[
-              0,
-              1,
-              2,
-            ].map((column) => (
-              <View key={column} className='flex-1 gap-3'>
-                {privateTickets
-                  .filter((_, index) => index % 3 === column)
-                  .map((ticket) => (
-                    <TouchableOpacity
-                      key={ticket.id}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/ticket/[workoutId]',
-                          params: {
-                            workoutId: ticket.id,
-                          },
-                        })
-                      }
-                      className='aspect-square rounded-3xl bg-surface-muted p-3'
-                    >
-                      <View className='flex-row items-start justify-between'>
-                        <Text className='mt-1 font-geist-mono text-[8px] text-ink-muted'>
-                          {ticket.completedAt}
-                        </Text>
-                        <Feather name='arrow-up-right' size={12} color={Colors.surface.dark} />
-                      </View>
-                      <View className='mt-auto'>
-                        <Text className='font-geist-mono-semibold text-base tracking-[-1px] text-surface-dark'>
-                          {ticket.routineName.toUpperCase()}
-                        </Text>
-                        <Text className='mt-1 font-geist-mono text-[10px] text-ink-muted'>
-                          {formatDuration(ticket.durationMinutes)}
-                        </Text>
-                        <Text className='mt-0.5 font-geist-mono text-[10px] text-ink-muted'>
-                          {ticket.volumeKg.toLocaleString('es-MX')} kg
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-              </View>
-            ))}
-          </View>
+          tickets.length === 0 ? (
+            <View className='mt-4 items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-6 py-10'>
+              <Feather name='file-text' size={26} color={Colors.ink.soft} />
+              <Text className='mt-4 text-center font-geist-mono-semibold text-sm text-surface-dark'>
+                Aún no tienes tickets
+              </Text>
+              <Text className='mt-2 text-center font-geist-mono text-xs text-ink-muted'>
+                Toca el día actual para registrar tu primer entrenamiento.
+              </Text>
+            </View>
+          ) : (
+            <View className='mt-4 flex-row gap-3'>
+              {[
+                0,
+                1,
+                2,
+              ].map((column) => (
+                <View key={column} className='flex-1 gap-3'>
+                  {tickets
+                    .filter((_, index) => index % 3 === column)
+                    .map((ticket) => (
+                      <TouchableOpacity
+                        key={ticket.id}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/ticket/[workoutId]',
+                            params: {
+                              workoutId: ticket.id,
+                            },
+                          })
+                        }
+                        className='aspect-square rounded-3xl bg-surface-muted p-3'
+                      >
+                        <View className='flex-row items-start justify-between'>
+                          <Text className='mt-1 font-geist-mono text-[8px] text-ink-muted'>
+                            {formatCompletedAt(ticket.completedAt)}
+                          </Text>
+                          <Feather name='arrow-up-right' size={12} color={Colors.surface.dark} />
+                        </View>
+                        <View className='mt-auto'>
+                          <Text className='font-geist-mono-semibold text-base tracking-[-1px] text-surface-dark'>
+                            {ticket.routineName.toUpperCase()}
+                          </Text>
+                          <Text className='mt-1 font-geist-mono text-[10px] text-ink-muted'>
+                            {formatDuration(ticket.durationMinutes)}
+                          </Text>
+                          <Text className='mt-0.5 font-geist-mono text-[10px] text-ink-muted'>
+                            {ticket.volumeKg.toLocaleString('es-MX')} kg
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+              ))}
+            </View>
+          )
         ) : (
-          <MonthlyTrainingGrid />
+          <MonthlyTrainingGrid completedDays={completedDays} />
         )}
       </ScrollView>
+
       <BottomSheetModal
         ref={routineSheetRef}
         snapPoints={snapPoints}
@@ -302,8 +271,19 @@ export default function TicketsTab() {
                   Sin rutinas
                 </Text>
                 <Text className='mt-1 text-center font-geist-mono text-xs text-ink-muted'>
-                  Crea una para empezar a entrenar.
+                  Crea una para empezar.
                 </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    routineSheetRef.current?.dismiss()
+                    router.push('/routine/new')
+                  }}
+                  className='mt-5 rounded-2xl bg-surface-dark px-4 py-3'
+                >
+                  <Text className='font-geist-mono-semibold text-xs text-surface-card'>
+                    CREAR RUTINA
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               routines.map((routine) => (

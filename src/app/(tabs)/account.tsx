@@ -1,8 +1,12 @@
 import { Feather } from '@expo/vector-icons'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 import { GymScreen } from '@/components/gym/GymUI'
 import { mockProfile } from '@/features/gym/mock-data'
+import { useRoutinesStore } from '@/features/routines/routines-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
+import { WARNING_CLEAR_ALL_MMKVS_INSTANCES } from '@/lib/mmkv/stores'
+import { queryClient } from '@/lib/qc'
 
 const settings = [
   {
@@ -23,6 +27,45 @@ const settings = [
 ]
 
 export default function AccountTab() {
+  function handleClearPersistedState() {
+    Alert.alert(
+      '¿Limpiar datos guardados?',
+      'Esto borra rutinas, tickets, círculos y la sesión persistida. La app quedará como recién instalada. Requerirá reiniciar para rehidratar desde cero.',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Limpiar',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              WARNING_CLEAR_ALL_MMKVS_INSTANCES()
+              queryClient.clear()
+              useRoutinesStore.setState({
+                routines: [],
+              })
+              useTicketsStore.setState({
+                circles: [],
+                tickets: [],
+              })
+              Alert.alert(
+                'Datos limpiados',
+                'Por favor cierra y vuelve a abrir la app para recargar desde cero.',
+              )
+            } catch (error) {
+              Alert.alert(
+                'Error al limpiar',
+                error instanceof Error ? error.message : 'ErrorReible',
+              )
+            }
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <GymScreen title='Perfil'>
       <ScrollView
@@ -114,6 +157,34 @@ export default function AccountTab() {
             <View className='ml-4 h-11 w-11 items-center justify-center rounded-2xl bg-surface-soft'>
               <Feather name='users' size={18} color={Colors.surface.dark} />
             </View>
+          </View>
+        </View>
+
+        <View className='mt-8'>
+          <Text className='font-geist-mono text-[10px] tracking-[2px] text-ink-subtle'>DEV</Text>
+          <Text className='mt-1 font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
+            Herramientas
+          </Text>
+          <View className='mt-4 overflow-hidden rounded-3xl border border-dashed border-border-dashed bg-surface-muted'>
+            <TouchableOpacity
+              onPress={handleClearPersistedState}
+              className='flex-row items-center px-5 py-4'
+              accessibilityRole='button'
+              accessibilityLabel='Limpiar datos guardados'
+            >
+              <View className='h-10 w-10 items-center justify-center rounded-full bg-surface-soft'>
+                <Feather name='trash-2' size={16} color={Colors.surface.dark} />
+              </View>
+              <View className='ml-3 flex-1'>
+                <Text className='font-geist-mono-medium text-sm text-surface-dark'>
+                  Limpiar datos guardados
+                </Text>
+                <Text className='mt-1 font-geist-mono text-xs text-ink-subtle'>
+                  Borra MMKV, react-query y reinicia rutinas/tickets
+                </Text>
+              </View>
+              <Feather name='chevron-right' size={18} color={Colors.ink.soft} />
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

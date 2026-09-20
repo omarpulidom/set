@@ -34,4 +34,4 @@ function WARNING_CLEAR_ALL_MMKVS_INSTANCES() {
   }
 }
 
-export { storageMMKV, reactQueryStorage, WARNING_CLEAR_ALL_MMKVS_INSTANCES }
+export { reactQueryStorage, storageMMKV, WARNING_CLEAR_ALL_MMKVS_INSTANCES }

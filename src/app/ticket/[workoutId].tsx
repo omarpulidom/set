@@ -5,16 +5,99 @@ import { Image, ScrollView, Share, Text, TouchableOpacity, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { StarRating } from '@/components/Elements/StarRating'
-import { HalftoneDiamondCamera } from '@/components/Skia'
-import { TicketFrame } from '@/components/tickets/TicketFrame'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
+
+const WEEKDAYS_SHORT = [
+  'SUN',
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+] as const
+const WEEKDAYS_LONG = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+] as const
+const MONTHS_SHORT = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+] as const
+const MONTHS_LONG = [
+  'JANUARY',
+  'FEBRUARY',
+  'MARCH',
+  'APRIL',
+  'MAY',
+  'JUNE',
+  'JULY',
+  'AUGUST',
+  'SEPTEMBER',
+  'OCTOBER',
+  'NOVEMBER',
+  'DECEMBER',
+] as const
+
+function formatClock(date: Date) {
+  const hour24 = date.getHours()
+  const hour12 = hour24 % 12 || 12
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  const period = hour24 >= 12 ? 'PM' : 'AM'
+  return `${String(hour12).padStart(2, '0')}:${minute} ${period}`
+}
+
+function formatTicketDate(isoDate: string) {
+  const date = new Date(isoDate)
+  return `${MONTHS_LONG[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+}
+
+function formatOfficeTime(isoDate: string) {
+  const date = new Date(isoDate)
+  return `${WEEKDAYS_SHORT[date.getDay()]}-${MONTHS_SHORT[date.getMonth()]} ${formatClock(date)}`
+}
+
+function formatClosedTime(isoDate: string) {
+  const date = new Date(isoDate)
+  return `${WEEKDAYS_LONG[date.getDay()]} ${date.getDate()} @ ${formatClock(date)}`
+}
+
+function formatDuration(seconds: number) {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+function formatVolumeChange(value: number | undefined) {
+  if (value === undefined) return '—'
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`
+}
+
+function formatAuthor(authorName: string) {
+  return `@${authorName.replace(/\s+/g, '').toUpperCase()}`
+}
 
 export default function TicketDetailScreen() {
   const router = useRouter()
   const { workoutId } = useLocalSearchParams<{
     workoutId?: string
   }>()
-  const { react, tickets } = useTicketMockStore()
+  const tickets = useTicketsStore((state) => state.tickets)
   const ticket = tickets.find((item) => item.id === workoutId)
   const [ticketRenderSize, setTicketRenderSize] = useState({
     width: 0,
@@ -74,27 +157,6 @@ export default function TicketDetailScreen() {
         <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
           {ticket.routineName}
         </Text>
-        <TicketFrame ticket={ticket} onReact={(reaction) => react(ticket.id, reaction)} />
-        <View className='mt-6 rounded-3xl bg-surface-muted p-5'>
-          <View className='flex-row border-t border-border-soft pt-4'>
-            <View className='flex-1'>
-              <Text className='font-geist-mono text-[10px] text-ink-muted'>DURACIÓN</Text>
-              <Text className='mt-1 font-geist-mono-semibold text-sm text-surface-dark'>
-                {ticket.durationMinutes} min
-              </Text>
-            </View>
-            <View className='flex-1 border-l border-border-soft pl-4'>
-              <Text className='font-geist-mono text-[10px] text-ink-muted'>FIRMA</Text>
-              <Text className='mt-1 font-geist-mono-semibold text-sm text-surface-dark'>
-                {ticket.signedByAuthor ? 'Confirmada' : 'Pendiente'}
-              </Text>
-            </View>
-          </View>
-          <Text className='mt-5 font-geist-mono text-xs leading-5 text-ink-muted'>
-            Aquí irá el diseño final del ticket, sus datos de series, peso, foto y composición
-            visual.
-          </Text>
-        </View>
 
         {/* Short ticket */}
         <View
@@ -183,7 +245,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content * 1.25,
                     }}
                   >
-                    @OMARPM
+                    {formatAuthor(ticket.authorName)}
                   </Text>
                 </View>
                 <View className='flex-row justify-between'>
@@ -193,7 +255,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    UPPER DAY
+                    {ticket.routineName.toUpperCase()}
                   </Text>
                   <Text
                     className='font-merchant text-ink-muted'
@@ -201,7 +263,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    AUGUST 5, 2026
+                    {formatTicketDate(ticket.completedAt)}
                   </Text>
                 </View>
               </View>
@@ -209,12 +271,21 @@ export default function TicketDetailScreen() {
               {/* Halftone diamond camera */}
               {ticketRenderSize.width > 0 ? (
                 <View
-                  className='self-center'
                   style={{
-                    marginVertical: sizes.gap,
+                    width: '100%',
+                    marginVertical: sizes.gap * 1.5,
                   }}
                 >
-                  <HalftoneDiamondCamera width={ticketRenderSize.width} height={ticketRenderSize.width} />
+                  <Image
+                    source={{
+                      uri: ticket.photo,
+                    }}
+                    resizeMode='cover'
+                    style={{
+                      width: '100%',
+                      aspectRatio: 1,
+                    }}
+                  />
                 </View>
               ) : null}
 
@@ -246,7 +317,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      8
+                      {ticket.exercises.length}
                     </Text>
                   </View>
                   {/* Item - SETS */}
@@ -270,7 +341,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      23
+                      {ticket.totalSets}
                     </Text>
                   </View>
                   {/* Item - REPS */}
@@ -294,7 +365,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      214
+                      {ticket.totalReps}
                     </Text>
                   </View>
                   {/* Item - DURATION */}
@@ -318,7 +389,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      01:18
+                      {formatDuration(ticket.durationSeconds)}
                     </Text>
                   </View>
                 </View>
@@ -344,7 +415,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      92%
+                      {ticket.completionPercentage}%
                     </Text>
                   </View>
                   {/* Item - VOLUME CHANGE */}
@@ -368,7 +439,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      +6.4%
+                      {formatVolumeChange(ticket.volumeChangePercentage)}
                     </Text>
                   </View>
                   {/* Item - TOTAL */}
@@ -392,7 +463,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.label,
                       }}
                     >
-                      12,480 kg
+                      {Math.round(ticket.volumeKg).toLocaleString('en-US')} kg
                     </Text>
                   </View>
                 </View>
@@ -432,7 +503,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  THU-AUG 02:12 PM
+                  {formatOfficeTime(ticket.completedAt)}
                 </Text>
               </View>
 
@@ -452,7 +523,7 @@ export default function TicketDetailScreen() {
                   marginTop: sizes.gap,
                 }}
               >
-                #00032
+                #{String(ticket.sessionNumber).padStart(5, '0')}
               </Text>
             </View>
           </View>
@@ -544,7 +615,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  SESSION:#23
+                  SESSION:#{ticket.sessionNumber}
                 </Text>
                 <Text
                   className='font-merchant text-center text-legacy-ticket'
@@ -552,7 +623,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  AUGUST 2, 2026
+                  {formatTicketDate(ticket.completedAt)}
                 </Text>
                 <Text
                   className='font-merchant text-center text-ink-muted'
@@ -560,7 +631,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  UPPER DAY
+                  {ticket.routineName.toUpperCase()}
                 </Text>
               </View>
               {/* Table */}
@@ -588,6 +659,9 @@ export default function TicketDetailScreen() {
                   <View
                     style={{
                       gap: sizes.gap * 3.14,
+                      flex: 1,
+                      minWidth: 0,
+                      paddingRight: sizes.gap,
                     }}
                   >
                     {/* Label */}
@@ -605,54 +679,21 @@ export default function TicketDetailScreen() {
                         gap: sizes.gap,
                       }}
                     >
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        1. BENCH PRESS
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        2. LAT PULLDOWN
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        3. INCLINE DB PRESS
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        4. SHOULDER PRESS
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        5. LATERAL RAISE
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        6. HAMMER CURL
-                      </Text>
+                      {ticket.exercises.map((exercise, index) => (
+                        <Text
+                          key={exercise.id}
+                          numberOfLines={2}
+                          ellipsizeMode='tail'
+                          className='font-merchant text-legacy-ticket'
+                          style={{
+                            fontSize: sizes.content,
+                            lineHeight: sizes.content * 1.15,
+                            height: sizes.content * 2.3,
+                          }}
+                        >
+                          {index + 1}. {exercise.name.toUpperCase()}
+                        </Text>
+                      ))}
                     </View>
                   </View>
                   {/* Column 2 */}
@@ -660,6 +701,7 @@ export default function TicketDetailScreen() {
                     className='items-center'
                     style={{
                       gap: sizes.gap * 3.14,
+                      width: '25%',
                     }}
                   >
                     {/* Label */}
@@ -677,54 +719,25 @@ export default function TicketDetailScreen() {
                         gap: sizes.gap,
                       }}
                     >
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        4 x 6
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        3 x 12
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        3 x 10
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        3 x 10
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        4 x 15
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        3 x 12
-                      </Text>
+                      {ticket.exercises.map((exercise) => (
+                        <Text
+                          key={exercise.id}
+                          className='font-merchant text-legacy-ticket'
+                          style={{
+                            fontSize: sizes.content,
+                            lineHeight: sizes.content * 1.15,
+                            height: sizes.content * 2.3,
+                          }}
+                        >
+                          {exercise.sets.length} x{' '}
+                          {exercise.sets.length
+                            ? Math.round(
+                                exercise.sets.reduce((sum, set) => sum + set.reps, 0) /
+                                  exercise.sets.length,
+                              )
+                            : 0}
+                        </Text>
+                      ))}
                     </View>
                   </View>
                   {/* Column 3 */}
@@ -732,6 +745,7 @@ export default function TicketDetailScreen() {
                     className='items-end'
                     style={{
                       gap: sizes.gap * 3.14,
+                      width: '23%',
                     }}
                   >
                     {/* Label */}
@@ -750,54 +764,23 @@ export default function TicketDetailScreen() {
                         alignItems: 'center',
                       }}
                     >
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 85 kg
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 65 kg
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 32 kg
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 25 kg
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 10 kg
-                      </Text>
-                      <Text
-                        className='font-merchant text-legacy-ticket'
-                        style={{
-                          fontSize: sizes.content,
-                        }}
-                      >
-                        @ 18 kg
-                      </Text>
+                      {ticket.exercises.map((exercise) => (
+                        <Text
+                          key={exercise.id}
+                          className='font-merchant text-legacy-ticket'
+                          style={{
+                            fontSize: sizes.content,
+                            lineHeight: sizes.content * 1.15,
+                            height: sizes.content * 2.3,
+                          }}
+                        >
+                          @{' '}
+                          {exercise.sets
+                            .reduce((maximum, set) => Math.max(maximum, set.weightKg), 0)
+                            .toFixed(1)}{' '}
+                          kg
+                        </Text>
+                      ))}
                     </View>
                   </View>
                 </View>
@@ -841,7 +824,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    23
+                    {ticket.totalSets}
                   </Text>
                 </View>
                 <View
@@ -864,7 +847,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    214
+                    {ticket.totalReps}
                   </Text>
                 </View>
                 <View
@@ -887,7 +870,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    01:18
+                    {formatDuration(ticket.durationSeconds)}
                   </Text>
                 </View>
                 <View className='flex-row justify-between'>
@@ -906,7 +889,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    +6.4%
+                    {formatVolumeChange(ticket.volumeChangePercentage)}
                   </Text>
                 </View>
                 <View className='flex-row justify-between'>
@@ -924,14 +907,14 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.label,
                     }}
                   >
-                    12,480 kg
+                    {Math.round(ticket.volumeKg).toLocaleString('en-US')} kg
                   </Text>
                 </View>
               </View>
               {/* Rating */}
               <View className='self-center'>
                 <StarRating
-                  percentage={0.7}
+                  percentage={ticket.completionPercentage / 100}
                   size={sizes.label * 1.33}
                   color={Colors.legacy.ticket}
                 />
@@ -954,7 +937,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  Thursday 2 @ 02:12 PM
+                  {formatClosedTime(ticket.completedAt)}
                 </Text>
                 <Text
                   className='font-merchant text-legacy-ticket'
@@ -962,7 +945,7 @@ export default function TicketDetailScreen() {
                     fontSize: sizes.content,
                   }}
                 >
-                  @OMARPM
+                  {formatAuthor(ticket.authorName)}
                 </Text>
               </View>
               <Text
@@ -973,7 +956,7 @@ export default function TicketDetailScreen() {
                   marginBottom: -sizes.gap,
                 }}
               >
-                111111111111111111
+                {String(ticket.sessionNumber).padStart(18, '1')}
               </Text>
               <Text
                 className='font-merchant text-center text-legacy-ticket'

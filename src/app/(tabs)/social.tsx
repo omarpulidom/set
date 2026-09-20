@@ -5,11 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { TicketFrame } from '@/components/tickets/TicketFrame'
 import type { WorkoutTicket } from '@/features/gym/types'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 export default function SocialTab() {
   const router = useRouter()
-  const { react, tickets } = useTicketMockStore()
+  const { react, tickets } = useTicketsStore()
   const socialTickets = tickets.filter((ticket) => ticket.visibility === 'social')
 
   function shareTicket(ticket: WorkoutTicket) {
@@ -51,22 +51,43 @@ export default function SocialTab() {
         </View>
 
         <View className='mt-9 gap-4'>
-          {socialTickets.map((ticket) => (
-            <TicketFrame
-              key={ticket.id}
-              ticket={ticket}
-              onPress={() =>
-                router.push({
-                  pathname: '/ticket/[workoutId]',
-                  params: {
-                    workoutId: ticket.id,
-                  },
-                })
-              }
-              onShare={() => shareTicket(ticket)}
-              onReact={(reaction) => react(ticket.id, reaction)}
-            />
-          ))}
+          {socialTickets.length === 0 ? (
+            <View className='items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-6 py-10'>
+              <Feather name='users' size={26} color={Colors.ink.soft} />
+              <Text className='mt-4 text-center font-geist-mono-semibold text-sm text-surface-dark'>
+                Sin tickets sociales
+              </Text>
+              <Text className='mt-2 text-center font-geist-mono text-xs text-ink-muted'>
+                Crea un círculo y termina un entrenamiento para compartir tu primer ticket grupal.
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push('/circles')}
+                className='mt-5 flex-row items-center rounded-3xl bg-surface-dark px-5 py-3'
+              >
+                <Feather name='users' size={14} color={Colors.surface.card} />
+                <Text className='ml-2 font-geist-mono-semibold text-xs uppercase text-surface-card'>
+                  Ver círculos
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            socialTickets.map((ticket) => (
+              <TicketFrame
+                key={ticket.id}
+                ticket={ticket}
+                onPress={() =>
+                  router.push({
+                    pathname: '/ticket/[workoutId]',
+                    params: {
+                      workoutId: ticket.id,
+                    },
+                  })
+                }
+                onShare={() => shareTicket(ticket)}
+                onReact={(reaction) => react(ticket.id, reaction)}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { currentWeekDays, dayKey } from '@/lib/funcs/date'
 
 export function GymScreen({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -49,63 +50,46 @@ export function GraphPaperCard({
 }
 
 export function WeekStrip({
-  activeIndex = 4,
-  todayCompleted = false,
+  completedDays = new Set<string>(),
   onCurrentDayPress,
 }: {
-  activeIndex?: number
-  todayCompleted?: boolean
+  completedDays?: Set<string>
   onCurrentDayPress?: () => void
 }) {
-  const days = [
-    [
-      'L',
-      '18',
-    ],
-    [
-      'M',
-      '19',
-    ],
-    [
-      'M',
-      '20',
-    ],
-    [
-      'M',
-      '21',
-    ],
-    [
-      'V',
-      '22',
-    ],
-    [
-      'S',
-      '23',
-    ],
-    [
-      'D',
-      '24',
-    ],
+  const todayKey = dayKey(new Date())
+  const labels = [
+    'L',
+    'M',
+    'M',
+    'J',
+    'V',
+    'S',
+    'D',
   ]
+  const days = currentWeekDays()
 
   return (
     <View className='flex-row justify-between'>
-      {days.map(([day, date], index) => {
-        const completed = index === 0 || index === 2
-        const active = index === activeIndex
-        if (active) {
+      {days.map((date, index) => {
+        const key = dayKey(date)
+        const completed = completedDays.has(key)
+        const isToday = key === todayKey
+        const isFuture = key > todayKey
+        if (isToday) {
           return (
-            <View key={date} className='items-center'>
-              <Text className='mb-2 font-geist-mono text-[10px] text-ink-quiet'>{day}</Text>
+            <View key={key} className='items-center'>
+              <Text className='mb-2 font-geist-mono text-[10px] text-ink-quiet'>
+                {labels[index]}
+              </Text>
               <TouchableOpacity
-                disabled={todayCompleted}
+                disabled={completed || !onCurrentDayPress}
                 onPress={onCurrentDayPress}
                 activeOpacity={0.78}
                 className='h-12 w-12 items-center justify-center rounded-full bg-surface-dark'
               >
                 <Feather
-                  name={todayCompleted ? 'check' : 'plus'}
-                  size={todayCompleted ? 18 : 20}
+                  name={completed ? 'check' : 'plus'}
+                  size={completed ? 18 : 20}
                   color={Colors.surface.card}
                 />
               </TouchableOpacity>
@@ -113,21 +97,25 @@ export function WeekStrip({
           )
         }
         return (
-          <View key={date} className='items-center'>
-            <Text className='mb-2 font-geist-mono text-[10px] text-ink-quiet'>{day}</Text>
+          <View key={key} className='items-center'>
+            <Text className='mb-2 font-geist-mono text-[10px] text-ink-quiet'>{labels[index]}</Text>
             <View
               className={`h-12 w-12 items-center justify-center rounded-full border ${
-                completed ? 'border-ink bg-surface-dark' : 'border-border-warm bg-surface-card'
+                completed
+                  ? 'border-ink bg-surface-dark'
+                  : isFuture
+                    ? 'border-border-soft bg-surface-muted'
+                    : 'border-border-warm bg-surface-card'
               }`}
             >
               <Text
                 className={
                   completed
                     ? 'font-geist-mono-semibold text-sm text-surface-card'
-                    : 'font-geist-mono text-sm text-ink-strong'
+                    : `font-geist-mono text-sm ${isFuture ? 'text-ink-quiet' : 'text-ink-strong'}`
                 }
               >
-                {date}
+                {date.getDate()}
               </Text>
             </View>
           </View>

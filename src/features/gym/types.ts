@@ -19,6 +19,12 @@ export type WorkoutSet = {
   reps: number
 }
 
+export type WorkoutExerciseResult = {
+  id: string
+  name: string
+  sets: WorkoutSet[]
+}
+
 export type CompletedWorkout = {
   id: string
   routineId: string
@@ -43,11 +49,21 @@ export type TicketReaction = 'fire' | 'clap' | 'strong'
 export type WorkoutTicket = {
   id: string
   sourceWorkoutId: string
+  routineId: string
   visibility: TicketVisibility
   routineName: string
+  /** ISO-8601 timestamp. Kept structured so every screen can format it correctly. */
   completedAt: string
+  durationSeconds: number
   durationMinutes: number
   volumeKg: number
+  totalSets: number
+  totalReps: number
+  completionPercentage: number
+  volumeChangePercentage?: number
+  sessionNumber: number
+  exercises: WorkoutExerciseResult[]
+  /** JPEG data URI containing the already-rendered camera effect. */
   photo: string
   signedByAuthor: boolean
   circles: string[]

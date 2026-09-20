@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 export default function NewCircleScreen() {
   const router = useRouter()
   const [name, setName] = useState('')
-  const createCircle = useTicketMockStore((state) => state.createCircle)
+  const createCircle = useTicketsStore((state) => state.createCircle)
   return (
     <SafeAreaView
       className='flex-1 bg-surface p-5'

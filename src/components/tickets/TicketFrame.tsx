@@ -9,6 +9,13 @@ const reactionLabels: Record<TicketReaction, string> = {
   strong: '💪',
 }
 
+function formatCompletedAt(isoDate: string) {
+  return new Intl.DateTimeFormat('es-MX', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(isoDate))
+}
+
 export function TicketFrame({
   ticket,
   onPress,
@@ -43,7 +50,9 @@ export function TicketFrame({
           <Feather name='share' size={14} color={Colors.surface.dark} />
         </TouchableOpacity>
       </View>
-      <Text className='mt-2 font-geist-mono text-xs text-ink-subtle'>{ticket.completedAt}</Text>
+      <Text className='mt-2 font-geist-mono text-xs text-ink-subtle'>
+        {formatCompletedAt(ticket.completedAt)}
+      </Text>
       {social ? (
         <>
           <Text className='mt-3 font-geist-mono text-[10px] text-ink-muted'>

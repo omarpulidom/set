@@ -5,7 +5,7 @@ import { ScrollView, Share, Text, TextInput, TouchableOpacity, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { TicketFrame } from '@/components/tickets/TicketFrame'
-import { useTicketMockStore } from '@/features/tickets/mock-store'
+import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 export default function CircleDetailScreen() {
   const router = useRouter()
@@ -13,7 +13,7 @@ export default function CircleDetailScreen() {
     circleId: string
   }>()
   const { addMember, circles, deleteCircle, react, removeMember, renameCircle, tickets } =
-    useTicketMockStore()
+    useTicketsStore()
   const circle = circles.find((item) => item.id === circleId)
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(circle?.name ?? '')
