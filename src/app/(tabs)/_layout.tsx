@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { TabBar } from '@/components/Elements/TabBar'
 import { useAuth } from '@/components/Providers/AuthProvider'
+import { featureFlags } from '@/lib/feature-flags'
 
 export default function TabsLayout() {
   const { user } = useAuth()
@@ -36,6 +37,7 @@ export default function TabsLayout() {
           name='social'
           options={{
             title: 'Amigos',
+            href: featureFlags.circles ? undefined : null,
           }}
         />
         <Tabs.Screen

@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons'
 import type { BottomTabBarProps } from 'expo-router/js-tabs'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
+import { featureFlags } from '@/lib/feature-flags'
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const tabs = {
@@ -26,7 +27,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         <View className='flex-row items-center justify-center gap-2'>
           {state.routes.map((route, index) => {
             const tab = tabs[route.name as keyof typeof tabs]
-            if (!tab) return null
+            if (!tab || (!featureFlags.circles && route.name === 'social')) return null
             const isFocused = state.index === index
 
             const onPress = () => {
