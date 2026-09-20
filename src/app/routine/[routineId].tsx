@@ -48,7 +48,10 @@ export default function RoutineDetailScreen() {
     )
   }
 
-  const totalSeries = routine.exercises.reduce((total, exercise) => total + exercise.targetSets, 0)
+  const totalSeries = routine.exercises.reduce(
+    (total, exercise) => total + (exercise?.targetSets ?? 0),
+    0,
+  )
 
   function handleDelete() {
     Alert.alert(
@@ -129,7 +132,7 @@ export default function RoutineDetailScreen() {
         </View>
 
         <View className='mt-4 gap-3'>
-          {routine.exercises.map((exercise) => (
+          {routine.exercises.filter(Boolean).map((exercise) => (
             <TouchableOpacity
               key={exercise.id}
               onPress={() =>

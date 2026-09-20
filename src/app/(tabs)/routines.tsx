@@ -99,7 +99,7 @@ export default function RoutinesTab() {
                       <View className='mt-1 flex-row items-center'>
                         <Text className='font-geist-mono text-xs text-ink-muted'>
                           {routine.exercises.reduce(
-                            (total, exercise) => total + exercise.targetSets,
+                            (total, exercise) => total + (exercise?.targetSets ?? 0),
                             0,
                           )}{' '}
                           series
@@ -109,14 +109,17 @@ export default function RoutinesTab() {
                       </View>
                     </View>
                     <View className='w-2/5 justify-end border-l border-border-soft pl-3'>
-                      {routine.exercises.slice(0, 3).map((exercise) => (
-                        <Text
-                          key={exercise.id}
-                          className='mb-1 font-geist-mono text-[10px] text-surface-dark'
-                        >
-                          {exercise.name}
-                        </Text>
-                      ))}
+                      {routine.exercises
+                        .filter(Boolean)
+                        .slice(0, 3)
+                        .map((exercise) => (
+                          <Text
+                            key={exercise.id}
+                            className='mb-1 font-geist-mono text-[10px] text-surface-dark'
+                          >
+                            {exercise.name}
+                          </Text>
+                        ))}
                       {routine.exercises.length > 3 ? (
                         <Text className='font-geist-mono text-xs text-ink-muted'>…</Text>
                       ) : null}

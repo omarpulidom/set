@@ -36,6 +36,30 @@ function generateExerciseId(routineId: string, catalogExerciseId?: string) {
   return `routine-exercise-${routineId}-${base}-${Math.random().toString(36).slice(2, 6)}`
 }
 
+function isRoutineExercise(value: unknown): value is RoutineExercise {
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as Partial<RoutineExercise>
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.targetSets === 'number' &&
+    typeof candidate.targetReps === 'number'
+  )
+}
+
+function isRoutine(value: unknown): value is Routine {
+  if (typeof value !== 'object' || value === null) return false
+  const candidate = value as Partial<Routine>
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.description === 'string' &&
+    typeof candidate.accent === 'string' &&
+    Array.isArray(candidate.exercises) &&
+    candidate.exercises.every(isRoutineExercise)
+  )
+}
+
 export const useRoutinesStore = create<RoutinesStore>()(
   persist(
     (set, get) => ({
@@ -157,6 +181,20 @@ export const useRoutinesStore = create<RoutinesStore>()(
     {
       name: ROUTINES_STORE_NAME,
       storage: createJSONStorage(() => zustandMMKVStorage),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as
+          | {
+              routines?: unknown[]
+            }
+          | undefined
+        const routines = Array.isArray(persisted?.routines)
+          ? persisted.routines.filter(isRoutine)
+          : []
+        return {
+          ...currentState,
+          routines,
+        }
+      },
     },
   ),
 )
