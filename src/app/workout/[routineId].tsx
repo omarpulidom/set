@@ -11,7 +11,7 @@ import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { NumberRuler } from '@/components/NumberRuler'
-import { videoForExercise } from '@/features/exercises/catalog'
+import { getExerciseDisplayNameById, videoForExercise } from '@/features/exercises/catalog'
 import type { WorkoutSet } from '@/features/gym/types'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 
@@ -381,7 +381,7 @@ export default function WorkoutScreen() {
                   className='flex-row items-center justify-between p-4'
                 >
                   <Text className='flex-1 font-geist-mono-medium text-sm text-surface-dark'>
-                    {exercise.name}
+                    {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
                   </Text>
                   <View className='flex-row items-center gap-3'>
                     <View className='rounded-full bg-surface-card px-2.5 py-1'>
@@ -584,7 +584,10 @@ export default function WorkoutScreen() {
                     Serie {editing.setIndex + 1}
                   </Text>
                   <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
-                    {editingExercise.name}
+                    {getExerciseDisplayNameById(
+                      editingExercise.catalogExerciseId,
+                      editingExercise.name,
+                    )}
                   </Text>
                 </View>
                 <TouchableOpacity

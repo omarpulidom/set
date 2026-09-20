@@ -21,6 +21,7 @@ export type WorkoutSet = {
 
 export type WorkoutExerciseResult = {
   id: string
+  catalogExerciseId?: string
   name: string
   sets: WorkoutSet[]
 }

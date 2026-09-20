@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { formatMuscles } from '@/lib/funcs'
 
@@ -117,7 +118,7 @@ export default function RoutinesTab() {
                             key={exercise.id}
                             className='mb-1 font-geist-mono text-[10px] text-surface-dark'
                           >
-                            {exercise.name}
+                            {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
                           </Text>
                         ))}
                       {routine.exercises.length > 3 ? (

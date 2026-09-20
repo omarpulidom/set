@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { Colors } from '@/components/colors'
+import { getCatalogExerciseId } from '@/features/exercises/catalog'
 import type { Routine, RoutineExercise } from '@/features/gym/types'
 import { zustandMMKVStorage } from '@/lib/mmkv'
 
@@ -58,6 +59,27 @@ function isRoutine(value: unknown): value is Routine {
     Array.isArray(candidate.exercises) &&
     candidate.exercises.every(isRoutineExercise)
   )
+}
+
+function catalogIdFromRoutineExerciseId(id: string) {
+  const match = id.match(/-(\d{4})-[a-z0-9]{4}$/i)
+  return getCatalogExerciseId(match?.[1])
+}
+
+function migrateRoutineExercises(routines: unknown[]) {
+  return routines.map((value) => {
+    if (!isRoutine(value)) return value
+    return {
+      ...value,
+      exercises: value.exercises.map((exercise) => ({
+        ...exercise,
+        catalogExerciseId:
+          getCatalogExerciseId(exercise.catalogExerciseId) ??
+          catalogIdFromRoutineExerciseId(exercise.id) ??
+          getCatalogExerciseId(undefined, exercise.name),
+      })),
+    }
+  })
 }
 
 export const useRoutinesStore = create<RoutinesStore>()(
@@ -181,6 +203,18 @@ export const useRoutinesStore = create<RoutinesStore>()(
     {
       name: ROUTINES_STORE_NAME,
       storage: createJSONStorage(() => zustandMMKVStorage),
+      version: 1,
+      migrate: (persistedState) => {
+        const persisted = persistedState as {
+          routines?: unknown[]
+        }
+        return {
+          ...persisted,
+          routines: Array.isArray(persisted.routines)
+            ? migrateRoutineExercises(persisted.routines)
+            : [],
+        }
+      },
       merge: (persistedState, currentState) => {
         const persisted = persistedState as
           | {

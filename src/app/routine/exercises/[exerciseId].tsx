@@ -7,6 +7,8 @@ import { Colors } from '@/components/colors'
 import { NumberRuler } from '@/components/NumberRuler'
 import {
   getCatalogExercise,
+  getExerciseDisplayName,
+  getExerciseMetadata,
   imageForExercise,
   videoForExercise,
 } from '@/features/exercises/catalog'
@@ -73,10 +75,11 @@ export default function ExerciseDetailScreen() {
         />
 
         <Text className='mt-7 font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
-          {selectedExercise.name}
+          {getExerciseDisplayName(selectedExercise)}
         </Text>
         <Text className='mt-2 font-geist-mono text-xs text-ink-muted'>
-          {selectedExercise.target} · {selectedExercise.equipment}
+          {getExerciseMetadata(selectedExercise.target)} ·{' '}
+          {getExerciseMetadata(selectedExercise.equipment)}
         </Text>
 
         <View className='mt-5 rounded-3xl bg-surface-muted p-3'>
@@ -84,26 +87,27 @@ export default function ExerciseDetailScreen() {
             <View className='flex-1'>
               <Text className='font-geist-mono text-[9px] text-ink-muted'>Zona corporal</Text>
               <Text className='mt-0.5 font-geist-mono text-[10px] text-surface-dark'>
-                {selectedExercise.body_part}
+                {getExerciseMetadata(selectedExercise.body_part)}
               </Text>
             </View>
             <View className='flex-1'>
               <Text className='font-geist-mono text-[9px] text-ink-muted'>Equipo</Text>
               <Text className='mt-0.5 font-geist-mono text-[10px] text-surface-dark'>
-                {selectedExercise.equipment}
+                {getExerciseMetadata(selectedExercise.equipment)}
               </Text>
             </View>
           </View>
           <View className='mt-4 border-t border-border-soft pt-3'>
             <Text className='font-geist-mono text-[9px] text-ink-muted'>Músculo principal</Text>
             <Text className='mt-0.5 font-geist-mono text-[10px] text-surface-dark'>
-              {selectedExercise.muscle_group} · {selectedExercise.target}
+              {getExerciseMetadata(selectedExercise.muscle_group)} ·{' '}
+              {getExerciseMetadata(selectedExercise.target)}
             </Text>
             <Text className='mt-3 font-geist-mono text-[9px] text-ink-muted'>
               Músculos secundarios
             </Text>
             <Text className='mt-0.5 font-geist-mono text-[10px] leading-4 text-surface-dark'>
-              {selectedExercise.secondary_muscles.join(' · ')}
+              {selectedExercise.secondary_muscles.map(getExerciseMetadata).join(' · ')}
             </Text>
           </View>
         </View>

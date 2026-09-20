@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useDerivedPrimaryFocus, useDerivedRoutineFocus } from '@/features/exercises/muscles'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
@@ -155,7 +156,7 @@ export default function NewRoutineScreen() {
             >
               <View className='flex-row items-center justify-between'>
                 <Text className='flex-1 font-geist-mono-semibold text-sm text-surface-dark'>
-                  {exercise.name}
+                  {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
                 </Text>
                 <TouchableOpacity
                   onPress={(event) => {

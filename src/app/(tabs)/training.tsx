@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 import { GymScreen } from '@/components/gym/GymUI'
+import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 
 export default function TrainingTab() {
@@ -119,7 +120,7 @@ export default function TrainingTab() {
                     </View>
                     <View>
                       <Text className='font-geist-mono-semibold text-sm text-surface-dark'>
-                        {exercise.name}
+                        {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
                       </Text>
                       <Text className='mt-1 font-geist-mono text-[10px] text-ink-subtle'>
                         {exercise.targetSets} series · {exercise.targetReps} reps

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { formatMuscles } from '@/lib/funcs'
 
@@ -148,7 +149,7 @@ export default function RoutineDetailScreen() {
               className='rounded-3xl bg-surface-muted p-4'
             >
               <Text className='font-geist-mono-medium text-sm text-surface-dark'>
-                {exercise.name}
+                {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
               </Text>
               <Text className='mt-3 font-geist-mono text-xs text-ink-muted'>
                 {exercise.targetSets} series · {exercise.targetReps} reps

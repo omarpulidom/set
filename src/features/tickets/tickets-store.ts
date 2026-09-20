@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { getCatalogExerciseId } from '@/features/exercises/catalog'
 import type {
   Circle,
   Routine,
@@ -33,6 +34,29 @@ function generateId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+function catalogIdFromRoutineExerciseId(id: string) {
+  const match = id.match(/-(\d{4})-[a-z0-9]{4}$/i)
+  return getCatalogExerciseId(match?.[1])
+}
+
+function migrateTicketExercises(tickets: unknown[]) {
+  return tickets.map((value) => {
+    if (typeof value !== 'object' || value === null) return value
+    const ticket = value as WorkoutTicket
+    if (!Array.isArray(ticket.exercises)) return ticket
+    return {
+      ...ticket,
+      exercises: ticket.exercises.map((exercise) => ({
+        ...exercise,
+        catalogExerciseId:
+          getCatalogExerciseId(exercise.catalogExerciseId) ??
+          catalogIdFromRoutineExerciseId(exercise.id) ??
+          getCatalogExerciseId(undefined, exercise.name),
+      })),
+    }
+  })
+}
+
 function isPersistableTicket(value: unknown): value is WorkoutTicket {
   if (typeof value !== 'object' || value === null) return false
   const ticket = value as Partial<WorkoutTicket>
@@ -57,6 +81,7 @@ export const useTicketsStore = create<TicketsState>()(
         const sourceWorkoutId = generateId('workout')
         const exercises = routine.exercises.map((exercise) => ({
           id: exercise.id,
+          catalogExerciseId: exercise.catalogExerciseId,
           name: exercise.name,
           sets: (sets[exercise.id] ?? []).map((item) => ({
             weightKg: item.weightKg,
@@ -196,8 +221,18 @@ export const useTicketsStore = create<TicketsState>()(
     {
       name: TICKETS_STORE_NAME,
       storage: createJSONStorage(() => zustandMMKVStorage),
-      version: 2,
-      migrate: (persistedState) => persistedState,
+      version: 3,
+      migrate: (persistedState) => {
+        const persisted = persistedState as {
+          tickets?: unknown[]
+        }
+        return {
+          ...persisted,
+          tickets: Array.isArray(persisted.tickets)
+            ? migrateTicketExercises(persisted.tickets)
+            : [],
+        }
+      },
       merge: (persistedState, currentState) => {
         const persisted = persistedState as
           | {

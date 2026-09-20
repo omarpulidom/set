@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { StarRating } from '@/components/Elements/StarRating'
+import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 const WEEKDAYS_SHORT = [
@@ -737,7 +738,11 @@ export default function TicketDetailScreen() {
                               height: sizes.content * 2.65,
                             }}
                           >
-                            {index + 1}. {exercise.name.toUpperCase()}
+                            {index + 1}.{' '}
+                            {getExerciseDisplayNameById(
+                              exercise.catalogExerciseId,
+                              exercise.name,
+                            ).toUpperCase()}
                           </Text>
                         ))}
                       </View>

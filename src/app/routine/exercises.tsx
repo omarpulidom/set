@@ -9,6 +9,8 @@ import {
   type CatalogBodyPart,
   type CatalogExercise,
   filterCatalogExercises,
+  getExerciseDisplayName,
+  getExerciseMetadata,
   imageForExercise,
 } from '@/features/exercises/catalog'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
@@ -37,10 +39,10 @@ const ExerciseRow = memo(function ExerciseRow({
       />
       <View className='ml-4 flex-1'>
         <Text numberOfLines={1} className='font-geist-mono-semibold text-sm text-surface-dark'>
-          {exercise.name}
+          {getExerciseDisplayName(exercise)}
         </Text>
         <Text numberOfLines={1} className='mt-1 font-geist-mono text-[10px] text-ink-muted'>
-          {exercise.target} · {exercise.equipment}
+          {getExerciseMetadata(exercise.target)} · {getExerciseMetadata(exercise.equipment)}
         </Text>
       </View>
       {selected ? (

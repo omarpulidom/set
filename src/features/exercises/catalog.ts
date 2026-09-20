@@ -1,6 +1,7 @@
 import catalog from '@/assets/exercises/data/exercises.json'
 import { exerciseImageById } from './exercise-image-map'
 import { exerciseVideoById } from './exercise-video-map'
+import { getExerciseMetadataEs, getExerciseNameEs } from './translations'
 
 export type CatalogBodyPart = 'all' | 'back' | 'chest' | 'shoulders' | 'arms' | 'legs' | 'waist'
 
@@ -58,10 +59,40 @@ export const bodyPartFilters: {
   },
 ]
 
-export const exerciseCatalog = catalog as CatalogExercise[]
+// This variation is intentionally unavailable in the app for now.
+export const exerciseCatalog = (catalog as CatalogExercise[]).filter(
+  (exercise) => exercise.id !== '0046',
+)
 
 export function getCatalogExercise(exerciseId?: string) {
   return exerciseCatalog.find((exercise) => exercise.id === exerciseId)
+}
+
+export function getCatalogExerciseId(exerciseId: string | undefined, englishName?: string) {
+  if (exerciseId && getCatalogExercise(exerciseId)) return exerciseId
+  if (!englishName) return undefined
+  const matches = exerciseCatalog.filter(
+    (exercise) => normalizeExerciseSearch(exercise.name) === normalizeExerciseSearch(englishName),
+  )
+  return matches.length === 1 ? matches[0]?.id : undefined
+}
+
+export function getExerciseDisplayName(exercise: Pick<CatalogExercise, 'id' | 'name'>) {
+  return getExerciseNameEs(exercise.id, exercise.name)
+}
+
+export function getExerciseDisplayNameById(
+  catalogExerciseId: string | undefined,
+  fallbackName: string,
+) {
+  const exercise = getCatalogExercise(catalogExerciseId)
+  return exercise
+    ? getExerciseDisplayName(exercise)
+    : `${fallbackName[0]?.toLocaleUpperCase('es-MX') ?? ''}${fallbackName.slice(1)}`
+}
+
+export function getExerciseMetadata(value: string) {
+  return getExerciseMetadataEs(value)
 }
 
 export function imageForExercise(exerciseId: string) {
@@ -97,7 +128,11 @@ export function filterCatalogExercises(query: string, filter: CatalogBodyPart) {
   const normalizedQuery = normalizeExerciseSearch(query)
   return exerciseCatalog.filter((exercise) => {
     const matchesQuery =
-      !normalizedQuery || normalizeExerciseSearch(exercise.name).includes(normalizedQuery)
+      !normalizedQuery ||
+      [
+        exercise.name,
+        getExerciseDisplayName(exercise),
+      ].some((name) => normalizeExerciseSearch(name).includes(normalizedQuery))
     const matchesBodyPart = filter === 'all' || bodyPartGroup(exercise.body_part) === filter
     return matchesQuery && matchesBodyPart
   })
