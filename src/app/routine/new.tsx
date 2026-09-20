@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { RoutinePaper } from '@/components/routines/RoutinePaper'
 import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useDerivedPrimaryFocus, useDerivedRoutineFocus } from '@/features/exercises/muscles'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
@@ -69,6 +70,7 @@ export default function NewRoutineScreen() {
     >
       <ScrollView
         contentContainerStyle={{
+          flexGrow: 1,
           padding: 20,
           paddingBottom: 40,
         }}
@@ -90,18 +92,21 @@ export default function NewRoutineScreen() {
           {editingId ? 'EDITAR RUTINA' : 'NUEVA RUTINA'}
         </Text>
 
-        <View className='mt-8'>
+        <RoutinePaper className='mt-8 flex-1'>
+          <Text className='font-geist-mono text-[10px] tracking-[1.5px] text-ink-muted'>
+            DATOS DE RUTINA
+          </Text>
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder='Nombre de rutina'
             placeholderTextColor={Colors.ink.soft}
-            className='rounded-3xl bg-surface-muted px-5 py-4 font-geist-mono text-base text-surface-dark'
+            className='mt-4 border-b border-border-soft py-3 font-geist-mono text-base text-surface-dark'
           />
 
           <View className='mt-3'>
             {primaryFocus ? (
-              <View className='rounded-3xl border border-border-soft bg-surface-muted px-5 py-4'>
+              <View className='border-t border-dashed border-border-dashed pt-4'>
                 <Text className='font-geist-mono text-[10px] uppercase tracking-[2px] text-ink-muted'>
                   Músculos trabajados
                 </Text>
@@ -115,65 +120,67 @@ export default function NewRoutineScreen() {
               </Text>
             )}
           </View>
-        </View>
+          <View className='my-5'>
+            <View className='border-t border-dashed border-border-dashed' />
+          </View>
+          <View className='flex-row items-center justify-between'>
+            <Text className='font-geist-mono text-[10px] tracking-[1.5px] text-ink-muted'>
+              Ejercicios
+            </Text>
+            <Text className='font-geist-mono text-xs text-ink-muted'>{exercises.length}</Text>
+          </View>
 
-        <View className='mt-9 flex-row items-center justify-between'>
-          <Text className='font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
-            Ejercicios
-          </Text>
-          <Text className='font-geist-mono text-xs text-ink-muted'>{exercises.length}</Text>
-        </View>
+          <TouchableOpacity
+            onPress={() => router.push('/routine/exercises')}
+            className='mt-4 flex-row items-center justify-between border-y border-border-soft py-4'
+          >
+            <Text className='font-geist-mono text-sm text-ink-muted'>Buscar ejercicios</Text>
+            <Feather name='plus' size={18} color={Colors.surface.dark} />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => router.push('/routine/exercises')}
-          className='mt-4 flex-row items-center justify-between rounded-3xl bg-surface-muted px-5 py-4'
-        >
-          <Text className='font-geist-mono text-sm text-ink-muted'>Buscar ejercicios</Text>
-          <Feather name='plus' size={18} color={Colors.surface.dark} />
-        </TouchableOpacity>
+          {exercises.length === 0 ? (
+            <Text className='mt-3 font-geist-mono text-xs text-ink-soft'>
+              Empieza agregando ejercicios para armar tu rutina
+            </Text>
+          ) : null}
 
-        {exercises.length === 0 ? (
-          <Text className='mt-3 font-geist-mono text-xs text-ink-soft'>
-            Empieza agregando ejercicios para armar tu rutina
-          </Text>
-        ) : null}
-
-        <View className='mt-4 gap-3'>
-          {exercises.map((exercise) => (
-            <TouchableOpacity
-              key={exercise.id}
-              onPress={() =>
-                router.push({
-                  pathname: '/routine/exercises/[exerciseId]',
-                  params: {
-                    exerciseId: exercise.catalogExerciseId,
-                    draftExerciseId: exercise.id,
-                  },
-                })
-              }
-              activeOpacity={0.82}
-              className='rounded-3xl bg-surface-muted p-4'
-            >
-              <View className='flex-row items-center justify-between'>
-                <Text className='flex-1 font-geist-mono-semibold text-sm text-surface-dark'>
-                  {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
+          <View className='mt-4 gap-3'>
+            {exercises.map((exercise) => (
+              <TouchableOpacity
+                key={exercise.id}
+                onPress={() =>
+                  router.push({
+                    pathname: '/routine/exercises/[exerciseId]',
+                    params: {
+                      exerciseId: exercise.catalogExerciseId,
+                      draftExerciseId: exercise.id,
+                    },
+                  })
+                }
+                activeOpacity={0.82}
+                className='border-b border-border-soft py-4'
+              >
+                <View className='flex-row items-center justify-between'>
+                  <Text className='flex-1 font-geist-mono-semibold text-sm text-surface-dark'>
+                    {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={(event) => {
+                      event.stopPropagation()
+                      removeExercise(exercise.id)
+                    }}
+                    className='ml-3 h-7 w-7 items-center justify-center rounded-full bg-surface-card'
+                  >
+                    <Feather name='x' size={14} color={Colors.ink.soft} />
+                  </TouchableOpacity>
+                </View>
+                <Text className='mt-3 font-geist-mono text-xs text-ink-muted'>
+                  {exercise.targetSets} series · {exercise.targetReps} reps
                 </Text>
-                <TouchableOpacity
-                  onPress={(event) => {
-                    event.stopPropagation()
-                    removeExercise(exercise.id)
-                  }}
-                  className='ml-3 h-7 w-7 items-center justify-center rounded-full bg-surface-card'
-                >
-                  <Feather name='x' size={14} color={Colors.ink.soft} />
-                </TouchableOpacity>
-              </View>
-              <Text className='mt-3 font-geist-mono text-xs text-ink-muted'>
-                {exercise.targetSets} series · {exercise.targetReps} reps
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </RoutinePaper>
 
         {exercises.length ? (
           <TouchableOpacity
