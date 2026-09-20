@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { Colors } from '@/components/colors'
 import type { TicketReaction, WorkoutTicket } from '@/features/gym/types'
+import { featureFlags } from '@/lib/feature-flags'
 
 const reactionLabels: Record<TicketReaction, string> = {
   fire: '🔥',
@@ -55,10 +56,14 @@ export function TicketFrame({
       </Text>
       {social ? (
         <>
-          <Text className='mt-3 font-geist-mono text-[10px] text-ink-muted'>
-            {ticket.circles.join(' · ')}
-          </Text>
-          <View className='mt-4 flex-row border-t border-border-soft pt-3'>
+          {featureFlags.circles ? (
+            <Text className='mt-3 font-geist-mono text-[10px] text-ink-muted'>
+              {ticket.circles.join(' · ')}
+            </Text>
+          ) : null}
+          <View
+            className={`${featureFlags.circles ? 'mt-4' : 'mt-3'} flex-row border-t border-border-soft pt-3`}
+          >
             {(Object.keys(reactionLabels) as TicketReaction[]).map((reaction) => (
               <TouchableOpacity
                 key={reaction}

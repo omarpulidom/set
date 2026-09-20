@@ -8,6 +8,7 @@ import { Colors } from '@/components/colors'
 import { WeekStrip } from '@/components/gym/GymUI'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
+import { featureFlags } from '@/lib/feature-flags'
 import { completedDayKeys, dayKey } from '@/lib/funcs/date'
 
 function formatDuration(minutes: number) {
@@ -144,12 +145,14 @@ export default function TicketsTab() {
           <Text className='font-geist-mono-semibold text-3xl uppercase tracking-[-1px] text-surface-dark'>
             Tickets
           </Text>
-          <TouchableOpacity
-            onPress={() => router.push('/circles')}
-            className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
-          >
-            <Feather name='menu' size={19} color={Colors.surface.dark} />
-          </TouchableOpacity>
+          {featureFlags.circles ? (
+            <TouchableOpacity
+              onPress={() => router.push('/circles')}
+              className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+            >
+              <Feather name='menu' size={19} color={Colors.surface.dark} />
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <View className='mt-7'>
