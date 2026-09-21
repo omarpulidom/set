@@ -22,14 +22,20 @@ import { useMemo } from 'react'
 
 const GRAIN_TEXTURE = require('@/assets/textures/grain.png')
 
-const grayscaleShader: SkRuntimeEffect = Skia.RuntimeEffect.Make(`
+const compiledGrayscaleShader = Skia.RuntimeEffect.Make(`
   uniform shader image;
   half4 main(float2 xy) {
     half4 c = image.eval(xy);
     float l = c.r * 0.299 + c.g * 0.587 + c.b * 0.114;
     return half4(vec3(l), c.a);
   }
-`)!
+`)
+
+if (!compiledGrayscaleShader) {
+  throw new Error('Failed to compile grayscale RuntimeEffect')
+}
+
+const grayscaleShader: SkRuntimeEffect = compiledGrayscaleShader
 
 type Fit = 'cover' | 'contain' | 'fill' | 'fitHeight' | 'fitWidth' | 'none'
 

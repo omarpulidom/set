@@ -41,27 +41,9 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name='training'
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name='stats'
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name='account'
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
           name='profile'
           options={{
-            href: null,
+            title: 'Perfil',
           }}
         />
       </Tabs>

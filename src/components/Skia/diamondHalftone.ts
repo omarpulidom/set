@@ -118,14 +118,13 @@ half4 main(float2 xy) {
 }
 `
 
-export const diamondHalftone: SkRuntimeEffect =
-  Skia.RuntimeEffect.Make(SHADER_SOURCE)
+const compiledDiamondHalftone = Skia.RuntimeEffect.Make(SHADER_SOURCE)
 
-if (!diamondHalftone) {
-  throw new Error(
-    'Failed to compile diamond halftone RuntimeEffect'
-  )
+if (!compiledDiamondHalftone) {
+  throw new Error('Failed to compile diamond halftone RuntimeEffect')
 }
+
+export const diamondHalftone: SkRuntimeEffect = compiledDiamondHalftone
 
 export const diamondHalftoneDefaults = {
   cellSize: 8,

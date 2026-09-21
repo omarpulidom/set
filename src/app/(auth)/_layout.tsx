@@ -1,8 +1,8 @@
-import type { Route } from 'expo-router'
+import type { Href } from 'expo-router'
 import { Redirect, Stack } from 'expo-router'
 import { useAuth } from '@/components/Providers/AuthProvider'
 
-const DEFAULT_APP_ROUTE = '/' as Route
+const DEFAULT_APP_ROUTE: Href = '/'
 
 export default function AuthLayout() {
   const { isAuthenticated } = useAuth()

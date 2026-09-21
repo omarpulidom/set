@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { getCatalogExerciseId } from '@/features/exercises/catalog'
 import type {
   Circle,
   Routine,
@@ -9,8 +8,9 @@ import type {
   WorkoutTicket,
 } from '@/features/gym/types'
 import { zustandMMKVStorage } from '@/lib/mmkv'
+import { persistTicketPhoto } from './ticket-photo-storage'
 
-export const TICKETS_STORE_NAME = 'zustand-tickets-store'
+export const TICKETS_STORE_NAME = 'set-tickets-v1'
 
 type TicketsState = {
   circles: Circle[]
@@ -34,43 +34,6 @@ function generateId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-function catalogIdFromRoutineExerciseId(id: string) {
-  const match = id.match(/-(\d{4})-[a-z0-9]{4}$/i)
-  return getCatalogExerciseId(match?.[1])
-}
-
-function migrateTicketExercises(tickets: unknown[]) {
-  return tickets.map((value) => {
-    if (typeof value !== 'object' || value === null) return value
-    const ticket = value as WorkoutTicket
-    if (!Array.isArray(ticket.exercises)) return ticket
-    return {
-      ...ticket,
-      exercises: ticket.exercises.map((exercise) => ({
-        ...exercise,
-        catalogExerciseId:
-          getCatalogExerciseId(exercise.catalogExerciseId) ??
-          catalogIdFromRoutineExerciseId(exercise.id) ??
-          getCatalogExerciseId(undefined, exercise.name),
-      })),
-    }
-  })
-}
-
-function isPersistableTicket(value: unknown): value is WorkoutTicket {
-  if (typeof value !== 'object' || value === null) return false
-  const ticket = value as Partial<WorkoutTicket>
-  return (
-    typeof ticket.id === 'string' &&
-    typeof ticket.routineId === 'string' &&
-    typeof ticket.completedAt === 'string' &&
-    typeof ticket.durationSeconds === 'number' &&
-    typeof ticket.photo === 'string' &&
-    ticket.photo.startsWith('data:image/') &&
-    Array.isArray(ticket.exercises)
-  )
-}
-
 export const useTicketsStore = create<TicketsState>()(
   persist(
     (set, get) => ({
@@ -79,6 +42,7 @@ export const useTicketsStore = create<TicketsState>()(
 
       publishWorkout: (routine, durationSeconds, sets, photo, authorName) => {
         const sourceWorkoutId = generateId('workout')
+        const persistedPhoto = persistTicketPhoto(photo, sourceWorkoutId)
         const exercises = routine.exercises.map((exercise) => ({
           id: exercise.id,
           catalogExerciseId: exercise.catalogExerciseId,
@@ -119,7 +83,7 @@ export const useTicketsStore = create<TicketsState>()(
           volumeChangePercentage,
           sessionNumber: get().tickets.length + 1,
           exercises,
-          photo,
+          photo: persistedPhoto,
           signedByAuthor: true,
           authorName: authorName.trim() || 'Tú',
           circles: get().circles.map((circle) => circle.name),
@@ -221,34 +185,6 @@ export const useTicketsStore = create<TicketsState>()(
     {
       name: TICKETS_STORE_NAME,
       storage: createJSONStorage(() => zustandMMKVStorage),
-      version: 3,
-      migrate: (persistedState) => {
-        const persisted = persistedState as {
-          tickets?: unknown[]
-        }
-        return {
-          ...persisted,
-          tickets: Array.isArray(persisted.tickets)
-            ? migrateTicketExercises(persisted.tickets)
-            : [],
-        }
-      },
-      merge: (persistedState, currentState) => {
-        const persisted = persistedState as
-          | {
-              tickets?: unknown[]
-              circles?: Circle[]
-            }
-          | undefined
-        const tickets = Array.isArray(persisted?.tickets)
-          ? persisted.tickets.filter(isPersistableTicket)
-          : []
-        return {
-          ...currentState,
-          circles: Array.isArray(persisted?.circles) ? persisted.circles : [],
-          tickets,
-        }
-      },
     },
   ),
 )

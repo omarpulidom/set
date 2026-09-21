@@ -1,14 +1,14 @@
-import type { Route } from 'expo-router'
+import type { Href } from 'expo-router'
 
 interface IRedirectError {
-  redirectTo: Route
+  redirectTo: Href
   message?: string
 }
 
 export class RedirectError extends Error implements IRedirectError {
-  redirectTo: Route
+  redirectTo: Href
 
-  constructor(redirectTo: Route, message?: string) {
+  constructor(redirectTo: Href, message?: string) {
     super(message)
     this.redirectTo = redirectTo
   }

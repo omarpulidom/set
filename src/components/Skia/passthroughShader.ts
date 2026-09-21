@@ -14,8 +14,10 @@ half4 main(float2 xy) {
 }
 `
 
-export const passthroughShader: SkRuntimeEffect = Skia.RuntimeEffect.Make(SHADER_SOURCE)
+const compiledPassthroughShader = Skia.RuntimeEffect.Make(SHADER_SOURCE)
 
-if (!passthroughShader) {
+if (!compiledPassthroughShader) {
   throw new Error('Failed to compile passthrough RuntimeEffect')
 }
+
+export const passthroughShader: SkRuntimeEffect = compiledPassthroughShader

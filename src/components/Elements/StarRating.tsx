@@ -26,7 +26,7 @@ export function StarRating({
       }}
     >
       {/* Estrellas vacías */}
-      <View className='flex-row' style={StyleSheet.absoluteFillObject}>
+      <View className='flex-row' style={StyleSheet.absoluteFill}>
         {Array.from({
           length: 5,
         }).map((_, i) => (

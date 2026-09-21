@@ -38,7 +38,8 @@
         "noUnusedVariables": "error"
       },
       "suspicious": {
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noUnknownAtRules": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"

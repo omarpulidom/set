@@ -231,7 +231,27 @@ export default function WorkoutScreen() {
       ...current,
       [exerciseId]: (current[exerciseId] ?? []).filter((_, index) => index !== setIndex),
     }))
-    unconfirmSet(exerciseId, setIndex)
+    setConfirmed((current) => {
+      const next = new Set<string>()
+      const prefix = `${exerciseId}#`
+
+      for (const key of current) {
+        if (!key.startsWith(prefix)) {
+          next.add(key)
+          continue
+        }
+
+        const confirmedIndex = Number(key.slice(prefix.length))
+        if (!Number.isInteger(confirmedIndex) || confirmedIndex === setIndex) continue
+        next.add(
+          confirmedIndex > setIndex
+            ? setKey(exerciseId, confirmedIndex - 1)
+            : setKey(exerciseId, confirmedIndex),
+        )
+      }
+
+      return next
+    })
   }
 
   function confirmRemoveSet(exerciseId: string, setIndex: number) {

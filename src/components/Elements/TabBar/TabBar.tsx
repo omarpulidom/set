@@ -1,12 +1,25 @@
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { featureFlags } from '@/lib/feature-flags'
 
-export function TabBar({ state, navigation }: BottomTabBarProps) {
+type TabBarProps = {
+  state: {
+    index: number
+    routes: {
+      key: string
+      name: string
+    }[]
+  }
+  navigation: {
+    navigate: (name: string) => void
+  }
+}
+
+export function TabBar({ state, navigation }: TabBarProps) {
   const labels: Record<string, string> = {
     index: 'SETS',
     routines: 'RUTINAS',
     social: 'AMIGOS',
+    profile: 'PERFIL',
   } as const
   const visibleRoutes = state.routes.filter(
     (route) => labels[route.name] && (featureFlags.circles || route.name !== 'social'),

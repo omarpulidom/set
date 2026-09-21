@@ -63,9 +63,12 @@ export default function RoutineDetailScreen() {
   ]
 
   function handleDelete() {
+    if (!routine) return
+    const routineIdToDelete = routine.id
+    const routineNameToDelete = routine.name
     Alert.alert(
       'Eliminar rutina',
-      `¿Seguro que quieres eliminar "${routine.name}"? Se perderá la configuración.`,
+      `¿Seguro que quieres eliminar "${routineNameToDelete}"? Se perderá la configuración.`,
       [
         {
           text: 'Cancelar',
@@ -75,7 +78,7 @@ export default function RoutineDetailScreen() {
           text: 'Eliminar',
           style: 'destructive',
           onPress: () => {
-            useRoutinesStore.getState().deleteRoutine(routine.id)
+            useRoutinesStore.getState().deleteRoutine(routineIdToDelete)
             router.replace('/routines')
           },
         },

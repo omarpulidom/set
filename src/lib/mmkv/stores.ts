@@ -16,7 +16,7 @@ const reactQueryStorage = new MMKV({
   encryptionKey: REACT_QUERY_ENCRYPTION_KEY,
 })
 
-function WARNING_CLEAR_ALL_MMKVS_INSTANCES() {
+function clearAllPersistedData() {
   console.log('Clearing all MMKV instances...')
 
   try {
@@ -34,4 +34,4 @@ function WARNING_CLEAR_ALL_MMKVS_INSTANCES() {
   }
 }
 
-export { reactQueryStorage, storageMMKV, WARNING_CLEAR_ALL_MMKVS_INSTANCES }
+export { clearAllPersistedData, reactQueryStorage, storageMMKV }

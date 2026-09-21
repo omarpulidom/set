@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import type { Route } from 'expo-router'
+import type { Href } from 'expo-router'
 import { useRouter } from 'expo-router'
 import {
   createContext,
@@ -21,10 +21,10 @@ import { UsersService } from '@/api/Users/Users.Service'
 import { RedirectError } from '@/lib/Errors'
 import { useGlobalStore } from '@/store'
 
-const DEFAULT_LOGIN_ROUTE: Route = '/(auth)/login'
+const DEFAULT_LOGIN_ROUTE: Href = '/(auth)/login'
 
 type RequireAuthOptions = {
-  redirectTo?: Route
+  redirectTo?: Href
   message?: string
 }
 

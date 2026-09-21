@@ -130,11 +130,13 @@ half4 main(float2 xy) {
 }
 `
 
-export const crossHalftone: SkRuntimeEffect = Skia.RuntimeEffect.Make(SHADER_SOURCE)
+const compiledCrossHalftone = Skia.RuntimeEffect.Make(SHADER_SOURCE)
 
-if (!crossHalftone) {
+if (!compiledCrossHalftone) {
   throw new Error('Failed to compile cross halftone RuntimeEffect')
 }
+
+export const crossHalftone: SkRuntimeEffect = compiledCrossHalftone
 
 export const crossHalftoneDefaults = {
   cellSize: 8,

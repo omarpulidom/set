@@ -10,6 +10,7 @@ import {
   type HalftoneDiamondCameraRef,
 } from '@/components/Skia/HalftoneDiamondCamera'
 import type { WorkoutSet } from '@/features/gym/types'
+import { useProfileStore } from '@/features/profile/profile-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
 
@@ -26,6 +27,7 @@ export default function CreateTicketScreen() {
   }>()
   const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
   const { user } = useAuth()
+  const username = useProfileStore((state) => state.username)
   const cameraRef = useRef<HalftoneDiamondCameraRef>(null)
   const [photo, setPhoto] = useState<string>()
   const [cameraSize, setCameraSize] = useState(0)
@@ -73,14 +75,22 @@ export default function CreateTicketScreen() {
       Alert.alert('No se pudo crear el ticket', 'Los datos del entrenamiento están dañados.')
       return
     }
-    const authorName = user ? `${user.firstName} ${user.lastName}`.trim() : 'Tú'
-    const ticketId = publishWorkout(routine, Number(elapsedSeconds) || 1, sets, photo, authorName)
-    router.replace({
-      pathname: '/ticket/[workoutId]',
-      params: {
-        workoutId: ticketId,
-      },
-    })
+    try {
+      const accountName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+      const authorName = username || accountName || 'Tú'
+      const ticketId = publishWorkout(routine, Number(elapsedSeconds) || 1, sets, photo, authorName)
+      router.replace({
+        pathname: '/ticket/[workoutId]',
+        params: {
+          workoutId: ticketId,
+        },
+      })
+    } catch {
+      Alert.alert(
+        'No se pudo guardar el ticket',
+        'No fue posible guardar la foto en el dispositivo.',
+      )
+    }
   }
 
   if (!routine) {
