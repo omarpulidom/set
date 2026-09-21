@@ -37,48 +37,71 @@ function generateExerciseId(routineId: string, catalogExerciseId?: string) {
   return `routine-exercise-${routineId}-${base}-${Math.random().toString(36).slice(2, 6)}`
 }
 
-function isRoutineExercise(value: unknown): value is RoutineExercise {
-  if (typeof value !== 'object' || value === null) return false
-  const candidate = value as Partial<RoutineExercise>
-  return (
-    typeof candidate.id === 'string' &&
-    typeof candidate.name === 'string' &&
-    typeof candidate.targetSets === 'number' &&
-    typeof candidate.targetReps === 'number'
-  )
-}
-
-function isRoutine(value: unknown): value is Routine {
-  if (typeof value !== 'object' || value === null) return false
-  const candidate = value as Partial<Routine>
-  return (
-    typeof candidate.id === 'string' &&
-    typeof candidate.name === 'string' &&
-    typeof candidate.description === 'string' &&
-    typeof candidate.accent === 'string' &&
-    Array.isArray(candidate.exercises) &&
-    candidate.exercises.every(isRoutineExercise)
-  )
-}
-
-function catalogIdFromRoutineExerciseId(id: string) {
+function catalogIdFromRoutineExerciseId(id: string | undefined) {
+  if (!id) return undefined
   const match = id.match(/-(\d{4})-[a-z0-9]{4}$/i)
   return getCatalogExerciseId(match?.[1])
 }
 
-function migrateRoutineExercises(routines: unknown[]) {
-  return routines.map((value) => {
-    if (!isRoutine(value)) return value
-    return {
-      ...value,
-      exercises: value.exercises.map((exercise) => ({
-        ...exercise,
-        catalogExerciseId:
-          getCatalogExerciseId(exercise.catalogExerciseId) ??
-          catalogIdFromRoutineExerciseId(exercise.id) ??
-          getCatalogExerciseId(undefined, exercise.name),
-      })),
+function normalizePersistedRoutine(value: unknown): Routine | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const candidate = value as Partial<Routine>
+  if (typeof candidate.id !== 'string' || typeof candidate.name !== 'string') return undefined
+  if (!Array.isArray(candidate.exercises)) return undefined
+
+  const usedExerciseIds = new Set<string>()
+  const exercises = candidate.exercises.flatMap((exercise, index) => {
+    if (typeof exercise !== 'object' || exercise === null) return []
+    const item = exercise as Partial<RoutineExercise>
+    if (
+      typeof item.name !== 'string' ||
+      typeof item.targetSets !== 'number' ||
+      typeof item.targetReps !== 'number'
+    ) {
+      return []
     }
+
+    const persistedExerciseId = typeof item.id === 'string' ? item.id : undefined
+    const persistedCatalogId =
+      typeof item.catalogExerciseId === 'string' ? item.catalogExerciseId : undefined
+    const catalogExerciseId =
+      getCatalogExerciseId(persistedCatalogId) ??
+      catalogIdFromRoutineExerciseId(persistedExerciseId) ??
+      getCatalogExerciseId(undefined, item.name)
+    const baseId =
+      persistedExerciseId || `routine-exercise-${candidate.id}-${catalogExerciseId ?? index}`
+    const id = usedExerciseIds.has(baseId) ? `${baseId}-${index}` : baseId
+    usedExerciseIds.add(id)
+
+    return [
+      {
+        id,
+        catalogExerciseId,
+        name: item.name,
+        targetSets: item.targetSets,
+        targetReps: item.targetReps,
+      },
+    ]
+  })
+
+  return {
+    id: candidate.id,
+    name: candidate.name,
+    description:
+      typeof candidate.description === 'string' ? candidate.description : 'Rutina personalizada',
+    accent: typeof candidate.accent === 'string' ? candidate.accent : Colors.mono.DEFAULT,
+    exercises,
+  }
+}
+
+function normalizePersistedRoutines(routines: unknown[]) {
+  return routines.flatMap((routine) => {
+    const normalized = normalizePersistedRoutine(routine)
+    return normalized
+      ? [
+          normalized,
+        ]
+      : []
   })
 }
 
@@ -203,7 +226,7 @@ export const useRoutinesStore = create<RoutinesStore>()(
     {
       name: ROUTINES_STORE_NAME,
       storage: createJSONStorage(() => zustandMMKVStorage),
-      version: 1,
+      version: 2,
       migrate: (persistedState) => {
         const persisted = persistedState as {
           routines?: unknown[]
@@ -211,7 +234,7 @@ export const useRoutinesStore = create<RoutinesStore>()(
         return {
           ...persisted,
           routines: Array.isArray(persisted.routines)
-            ? migrateRoutineExercises(persisted.routines)
+            ? normalizePersistedRoutines(persisted.routines)
             : [],
         }
       },
@@ -222,7 +245,7 @@ export const useRoutinesStore = create<RoutinesStore>()(
             }
           | undefined
         const routines = Array.isArray(persisted?.routines)
-          ? persisted.routines.filter(isRoutine)
+          ? normalizePersistedRoutines(persisted.routines)
           : []
         return {
           ...currentState,

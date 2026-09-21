@@ -92,14 +92,7 @@ export default function RoutineDetailScreen() {
         'right',
       ]}
     >
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          padding: 20,
-          paddingBottom: 40,
-        }}
-        keyboardShouldPersistTaps='handled'
-      >
+      <View className='flex-1 px-5 pb-10 pt-5'>
         <View className='flex-row items-center justify-between'>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -123,131 +116,144 @@ export default function RoutineDetailScreen() {
         </View>
 
         <RoutinePaper className='mt-8 flex-1 pt-12' topRule={false}>
-          <Text className='font-geist-mono-semibold text-3xl uppercase leading-none tracking-[-2px] text-surface-dark'>
-            {routine.name}
-          </Text>
-          <View className='mt-5'>
-            <RoutineRule />
-          </View>
-          <View className='mt-5 border-l-2 border-surface-dark pl-3'>
-            <Text className='font-geist-mono text-[10px] tracking-[1.5px] text-ink-muted'>
-              MÚSCULOS TRABAJADOS
+          <ScrollView
+            className='flex-1'
+            contentContainerStyle={{
+              flexGrow: 1,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text className='font-geist-mono-semibold text-3xl uppercase leading-none tracking-[-2px] text-surface-dark'>
+              {routine.name}
             </Text>
-            <View className='mt-2 gap-1'>
-              {primaryMuscles.map((muscle) => (
-                <Text
-                  key={muscle}
-                  className='font-geist-mono-medium text-sm uppercase text-surface-dark'
-                >
-                  {muscle}
-                </Text>
-              ))}
+            <View className='mt-5'>
+              <RoutineRule />
             </View>
-          </View>
-          <View className='my-5'>
-            <RoutineRule />
-          </View>
-          <View className='flex-row'>
-            <View className='flex-1'>
-              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
-                SERIES
+            <View className='mt-5 border-l-2 border-surface-dark pl-3'>
+              <Text className='font-geist-mono text-[10px] tracking-[1.5px] text-ink-muted'>
+                MÚSCULOS TRABAJADOS
               </Text>
-              <Text className='mt-1 font-geist-mono-medium text-xl uppercase text-surface-dark'>
-                {totalSeries}
-              </Text>
+              <View className='mt-2 gap-1'>
+                {primaryMuscles.map((muscle) => (
+                  <Text
+                    key={muscle}
+                    className='font-geist-mono-medium text-sm uppercase text-surface-dark'
+                  >
+                    {muscle}
+                  </Text>
+                ))}
+              </View>
             </View>
-            <View className='flex-1 border-l border-border-soft pl-4'>
-              <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
-                DURACIÓN
-              </Text>
-              <Text className='mt-1 font-geist-mono-medium text-xl uppercase text-surface-dark'>
-                ~60 MIN
-              </Text>
+            <View className='my-5'>
+              <RoutineRule />
             </View>
-          </View>
-          <View className='my-5'>
-            <RoutineRule />
-          </View>
-          <View className='border border-surface-dark'>
-            <View className='flex-row border-b border-surface-dark'>
-              <Text className='flex-1 px-3 py-2 font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
-                EJERCICIO
-              </Text>
-              <View className='w-20 justify-center border-l border-surface-dark px-2 py-2'>
-                <Text className='text-right font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
+            <View className='flex-row'>
+              <View className='flex-1'>
+                <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
                   SERIES
                 </Text>
+                <Text className='mt-1 font-geist-mono-medium text-[16px] uppercase text-surface-dark'>
+                  {totalSeries}
+                </Text>
               </View>
-              <View className='w-16 justify-center border-l border-surface-dark px-2 py-2'>
-                <Text className='text-right font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
-                  REPS
+              <View className='flex-1 border-l border-border-soft pl-4'>
+                <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
+                  DURACIÓN
+                </Text>
+                <Text className='mt-1 font-geist-mono-medium text-[16px] uppercase text-surface-dark'>
+                  ~60 MIN
                 </Text>
               </View>
             </View>
-            {routine.exercises.filter(Boolean).map((exercise, index, exercises) => (
-              <TouchableOpacity
-                key={exercise.id}
-                onPress={() =>
-                  router.push({
-                    pathname: '/routine/exercises/[exerciseId]',
-                    params: {
-                      exerciseId: exercise.catalogExerciseId ?? exercise.id,
-                      readOnly: '1',
-                    },
-                  })
-                }
-                activeOpacity={0.82}
-                className='relative flex-row items-stretch justify-between'
-              >
-                <Text className='flex-1 px-3 py-2 font-geist-mono text-sm uppercase text-surface-dark'>
-                  {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
+            <View className='my-5'>
+              <RoutineRule />
+            </View>
+            <View className='border border-surface-dark'>
+              <View className='flex-row border-b border-surface-dark'>
+                <Text className='flex-1 px-3 py-2 font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
+                  EJERCICIO
                 </Text>
                 <View className='w-20 justify-center border-l border-surface-dark px-2 py-2'>
-                  <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
-                    {exercise.targetSets}
+                  <Text className='text-right font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
+                    SERIES
                   </Text>
                 </View>
                 <View className='w-16 justify-center border-l border-surface-dark px-2 py-2'>
-                  <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
-                    {exercise.targetReps}
+                  <Text className='text-right font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
+                    REPS
                   </Text>
                 </View>
-                {index < exercises.length - 1 ? (
-                  <View className='absolute bottom-0 left-0 right-0 h-px bg-border-warm' />
-                ) : null}
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View className='mt-auto pt-8'>
-            <Text className='text-center font-geist-mono text-xs uppercase text-ink-muted'>
-              2 X SEMANA
-            </Text>
-          </View>
+              </View>
+              {routine.exercises.filter(Boolean).map((exercise, index, exercises) => (
+                <TouchableOpacity
+                  key={exercise.id}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/routine/exercises/[exerciseId]',
+                      params: {
+                        exerciseId: exercise.catalogExerciseId ?? exercise.id,
+                        readOnly: '1',
+                      },
+                    })
+                  }
+                  activeOpacity={0.82}
+                  className='relative flex-row items-stretch justify-between'
+                >
+                  <Text className='flex-1 px-3 py-2 font-geist-mono text-sm uppercase text-surface-dark'>
+                    {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
+                  </Text>
+                  <View className='w-20 justify-center border-l border-surface-dark px-2 py-2'>
+                    <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
+                      {exercise.targetSets}
+                    </Text>
+                  </View>
+                  <View className='w-16 justify-center border-l border-surface-dark px-2 py-2'>
+                    <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
+                      {exercise.targetReps}
+                    </Text>
+                  </View>
+                  {index < exercises.length - 1 ? (
+                    <View className='absolute bottom-0 left-0 right-0 h-px bg-border-warm' />
+                  ) : null}
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className='mt-auto pt-8'>
+              <Text className='text-center font-geist-mono text-xs uppercase text-ink-muted'>
+                2 X SEMANA
+              </Text>
+            </View>
+          </ScrollView>
         </RoutinePaper>
 
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: '/workout/[routineId]',
-              params: {
-                routineId: routine.id,
-              },
-            })
-          }
-          className='mt-8 items-center rounded-3xl bg-surface-dark py-4'
-        >
-          <Text className='font-geist-mono-semibold text-sm uppercase text-surface-card'>
-            Iniciar entrenamiento
-          </Text>
-        </TouchableOpacity>
+        <View className='pt-4'>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: '/workout/[routineId]',
+                params: {
+                  routineId: routine.id,
+                },
+              })
+            }
+            className='items-center rounded-3xl bg-surface-dark py-4'
+          >
+            <Text className='font-geist-mono-semibold text-sm uppercase text-surface-card'>
+              Iniciar entrenamiento
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleDelete} className='mt-6 flex-row items-center self-start'>
-          <Feather name='trash-2' size={15} color={Colors.ink.soft} />
-          <Text className='ml-2 font-geist-mono text-xs uppercase text-ink-soft'>
-            Eliminar rutina
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            onPress={handleDelete}
+            className='mt-4 flex-row items-center self-start'
+          >
+            <Feather name='trash-2' size={15} color={Colors.ink.soft} />
+            <Text className='ml-2 font-geist-mono text-xs uppercase text-ink-soft'>
+              Eliminar rutina
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   )
 }

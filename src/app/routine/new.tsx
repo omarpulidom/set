@@ -35,6 +35,7 @@ export default function NewRoutineScreen() {
   function saveRoutine() {
     if (!canSave) return
     const payload = exercises.map((exercise) => ({
+      id: exercise.id,
       catalogExerciseId: exercise.catalogExerciseId,
       name: exercise.name,
       targetSets: exercise.targetSets || 1,

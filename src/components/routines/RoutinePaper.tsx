@@ -16,7 +16,14 @@ export function RoutinePaper({ children, className = '', topRule = true }: Routi
         <View className='h-4 w-4 rounded-full bg-surface-muted' />
       </View>
       <View
-        className={`ml-4 flex-1 ${topRule ? 'border-t border-dashed border-border-dashed pt-5' : ''}`}
+        className={`ml-4 flex-1 ${topRule ? 'border-t border-border-dashed pt-5' : ''}`}
+        style={
+          topRule
+            ? {
+                borderStyle: 'dashed',
+              }
+            : undefined
+        }
       >
         {children}
       </View>
@@ -25,5 +32,12 @@ export function RoutinePaper({ children, className = '', topRule = true }: Routi
 }
 
 export function RoutineRule() {
-  return <View className='border-t border-dashed border-border-dashed' />
+  return (
+    <View
+      className='h-1 border-t border-dashed border-border-dashed'
+      style={{
+        borderStyle: 'dashed',
+      }}
+    />
+  )
 }
