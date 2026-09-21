@@ -122,17 +122,23 @@ export default function RoutineDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        <RoutinePaper className='mt-8 flex-1'>
+        <RoutinePaper className='mt-8 flex-1 pt-12' topRule={false}>
           <Text className='font-geist-mono-semibold text-3xl uppercase leading-none tracking-[-2px] text-surface-dark'>
             {routine.name}
           </Text>
+          <View className='mt-5'>
+            <RoutineRule />
+          </View>
           <View className='mt-5 border-l-2 border-surface-dark pl-3'>
             <Text className='font-geist-mono text-[10px] tracking-[1.5px] text-ink-muted'>
               MÚSCULOS TRABAJADOS
             </Text>
             <View className='mt-2 gap-1'>
               {primaryMuscles.map((muscle) => (
-                <Text key={muscle} className='font-geist-mono-medium text-sm text-surface-dark'>
+                <Text
+                  key={muscle}
+                  className='font-geist-mono-medium text-sm uppercase text-surface-dark'
+                >
                   {muscle}
                 </Text>
               ))}
@@ -146,7 +152,7 @@ export default function RoutineDetailScreen() {
               <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
                 SERIES
               </Text>
-              <Text className='mt-1 font-geist-mono-semibold text-xl text-surface-dark'>
+              <Text className='mt-1 font-geist-mono-medium text-xl uppercase text-surface-dark'>
                 {totalSeries}
               </Text>
             </View>
@@ -154,7 +160,7 @@ export default function RoutineDetailScreen() {
               <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
                 DURACIÓN
               </Text>
-              <Text className='mt-1 font-geist-mono-semibold text-xl text-surface-dark'>
+              <Text className='mt-1 font-geist-mono-medium text-xl uppercase text-surface-dark'>
                 ~60 MIN
               </Text>
             </View>
@@ -178,7 +184,7 @@ export default function RoutineDetailScreen() {
                 </Text>
               </View>
             </View>
-            {routine.exercises.filter(Boolean).map((exercise) => (
+            {routine.exercises.filter(Boolean).map((exercise, index, exercises) => (
               <TouchableOpacity
                 key={exercise.id}
                 onPress={() =>
@@ -191,23 +197,31 @@ export default function RoutineDetailScreen() {
                   })
                 }
                 activeOpacity={0.82}
-                className='flex-row items-stretch justify-between border-b border-surface-dark last:border-b-0'
+                className='relative flex-row items-stretch justify-between'
               >
-                <Text className='flex-1 px-3 py-2 font-geist-mono text-sm text-surface-dark'>
+                <Text className='flex-1 px-3 py-2 font-geist-mono text-sm uppercase text-surface-dark'>
                   {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
                 </Text>
                 <View className='w-20 justify-center border-l border-surface-dark px-2 py-2'>
-                  <Text className='text-right font-geist-mono text-sm text-surface-dark'>
+                  <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
                     {exercise.targetSets}
                   </Text>
                 </View>
                 <View className='w-16 justify-center border-l border-surface-dark px-2 py-2'>
-                  <Text className='text-right font-geist-mono text-sm text-surface-dark'>
+                  <Text className='text-right font-geist-mono text-sm uppercase text-surface-dark'>
                     {exercise.targetReps}
                   </Text>
                 </View>
+                {index < exercises.length - 1 ? (
+                  <View className='absolute bottom-0 left-0 right-0 h-px bg-border-warm' />
+                ) : null}
               </TouchableOpacity>
             ))}
+          </View>
+          <View className='mt-auto pt-8'>
+            <Text className='text-center font-geist-mono text-xs uppercase text-ink-muted'>
+              2 X SEMANA
+            </Text>
           </View>
         </RoutinePaper>
 
@@ -222,14 +236,16 @@ export default function RoutineDetailScreen() {
           }
           className='mt-8 items-center rounded-3xl bg-surface-dark py-4'
         >
-          <Text className='font-geist-mono-semibold text-sm text-surface-card'>
+          <Text className='font-geist-mono-semibold text-sm uppercase text-surface-card'>
             Iniciar entrenamiento
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleDelete} className='mt-6 flex-row items-center self-start'>
           <Feather name='trash-2' size={15} color={Colors.ink.soft} />
-          <Text className='ml-2 font-geist-mono text-xs text-ink-soft'>Eliminar rutina</Text>
+          <Text className='ml-2 font-geist-mono text-xs uppercase text-ink-soft'>
+            Eliminar rutina
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

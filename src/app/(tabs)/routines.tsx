@@ -112,7 +112,7 @@ export default function RoutinesTab() {
                             </Text>
                             <Text
                               numberOfLines={2}
-                              className='mt-1 font-geist-mono-medium text-xs leading-4 text-surface-dark'
+                              className='mt-1 font-geist-mono-medium text-xs uppercase leading-4 text-surface-dark'
                             >
                               {getPrimaryMuscles(
                                 routine.exercises.map((exercise) => exercise.catalogExerciseId),
@@ -130,7 +130,7 @@ export default function RoutinesTab() {
                           <Text className='font-geist-mono text-[10px] tracking-[1px] text-ink-muted'>
                             SERIES
                           </Text>
-                          <Text className='mt-1 font-geist-mono-semibold text-lg text-surface-dark'>
+                          <Text className='mt-1 font-geist-mono-semibold text-lg uppercase text-surface-dark'>
                             {routine.exercises.reduce(
                               (total, exercise) => total + (exercise?.targetSets ?? 0),
                               0,
@@ -152,14 +152,14 @@ export default function RoutinesTab() {
                                 >
                                   <Text
                                     numberOfLines={1}
-                                    className='flex-1 pr-2 font-geist-mono text-[10px] text-surface-dark'
+                                    className='flex-1 pr-2 font-geist-mono text-[10px] uppercase text-surface-dark'
                                   >
                                     {getExerciseDisplayNameById(
                                       exercise.catalogExerciseId,
                                       exercise.name,
                                     )}
                                   </Text>
-                                  <Text className='font-geist-mono text-[10px] text-ink-muted'>
+                                  <Text className='font-geist-mono text-[10px] uppercase text-ink-muted'>
                                     {exercise.targetSets}×{exercise.targetReps}
                                   </Text>
                                 </View>
