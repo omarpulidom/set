@@ -175,14 +175,19 @@ export default function TicketsTab() {
 
         {viewMode === 'grid' ? (
           tickets.length === 0 ? (
-            <View className='mt-4 items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-6 py-10'>
-              <Feather name='file-text' size={26} color={Colors.ink.soft} />
-              <Text className='mt-4 text-center font-geist-mono-semibold text-sm text-surface-dark'>
-                Aún no tienes tickets
+            <View className='mt-5 flex-row items-center justify-between'>
+              <Text className='font-geist-mono text-sm text-ink-muted'>
+                Sin entrenamientos aún.
               </Text>
-              <Text className='mt-2 text-center font-geist-mono text-xs text-ink-muted'>
-                Toca el día actual para registrar tu primer entrenamiento.
-              </Text>
+              <TouchableOpacity
+                onPress={() => routineSheetRef.current?.present()}
+                className='flex-row items-center'
+              >
+                <Feather name='plus' size={14} color={Colors.surface.dark} />
+                <Text className='ml-1.5 font-geist-mono-semibold text-xs uppercase text-surface-dark'>
+                  Registrar
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <View className='mt-4 flex-row gap-3'>
