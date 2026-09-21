@@ -144,7 +144,7 @@ export default function TicketDetailScreen() {
     >
       <View className='flex-row items-center justify-between px-5 pt-5'>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/')}
           className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
         >
           <Feather name='arrow-left' size={19} color={Colors.surface.dark} />

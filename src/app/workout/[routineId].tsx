@@ -248,23 +248,6 @@ export default function WorkoutScreen() {
     ])
   }
 
-  function advanceToNextExercise(currentExerciseId: string) {
-    if (!routine) return
-    const idx = routine.exercises.findIndex((item) => item.id === currentExerciseId)
-    const next = routine.exercises[idx + 1]
-    if (!next) return
-    setExpandedId(next.id)
-  }
-
-  function handleAddExtraSet(exerciseId: string) {
-    addSet(exerciseId)
-    advanceToNextExercise(exerciseId)
-  }
-
-  function handleContinueWithoutExtra(exerciseId: string) {
-    advanceToNextExercise(exerciseId)
-  }
-
   const canFinish = useMemo(() => {
     if (!routine || routine.exercises.length === 0) return false
     return routine.exercises.every((exercise) => {
@@ -356,16 +339,14 @@ export default function WorkoutScreen() {
         </View>
 
         <View className='mt-4 gap-3'>
-          {routine.exercises.map((exercise, exerciseIndex) => {
+          {routine.exercises.map((exercise) => {
             const isExpanded = expandedId === exercise.id
-            const isLastExercise = exerciseIndex === routine.exercises.length - 1
             const videoSource = videoForExercise(exercise.catalogExerciseId ?? exercise.id)
             const unit = units[exercise.id] ?? 'kg'
             const list = sets[exercise.id] ?? []
             const activeIndex = list.findIndex((_, idx) => !confirmed.has(setKey(exercise.id, idx)))
             const allDone =
               list.length > 0 && list.every((_, idx) => confirmed.has(setKey(exercise.id, idx)))
-            const showExtraPrompt = isExpanded && allDone
             return (
               <View key={exercise.id} className='rounded-3xl bg-surface-muted'>
                 {isExpanded && videoSource ? (
@@ -457,11 +438,7 @@ export default function WorkoutScreen() {
                                 }}
                               >
                                 {isConfirmed ? (
-                                  <Feather
-                                    name='check-circle'
-                                    size={18}
-                                    color={Colors.surface.dark}
-                                  />
+                                  <Feather name='check' size={18} color={Colors.surface.dark} />
                                 ) : isActive ? (
                                   <View className='h-2 w-2 rounded-full bg-surface-dark' />
                                 ) : (
@@ -489,47 +466,16 @@ export default function WorkoutScreen() {
                         )
                       })}
                     </View>
-                    <TouchableOpacity
-                      onPress={() => addSet(exercise.id)}
-                      className='mt-3 flex-row items-center self-start'
-                    >
-                      <Feather name='plus' size={15} color={Colors.surface.dark} />
-                      <Text className='ml-1 font-geist-mono text-xs text-surface-dark'>
-                        Agregar serie
-                      </Text>
-                    </TouchableOpacity>
-                    {showExtraPrompt ? (
-                      <View className='mt-4 rounded-3xl border border-dashed border-border-dashed bg-surface-card p-4'>
-                        <View className='flex-row items-center'>
-                          <Feather name='plus-circle' size={16} color={Colors.surface.dark} />
-                          <Text className='ml-2 font-geist-mono-semibold text-sm text-surface-dark'>
-                            ¿Agregar otra serie?
-                          </Text>
-                        </View>
-                        <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
-                          {isLastExercise
-                            ? 'Completaste todas las series planeadas.'
-                            : 'Completaste las series planeadas de este ejercicio.'}
+                    {allDone ? (
+                      <TouchableOpacity
+                        onPress={() => addSet(exercise.id)}
+                        className='mt-2 flex-row items-center py-3'
+                      >
+                        <Feather name='plus' size={15} color={Colors.surface.dark} />
+                        <Text className='ml-2 font-geist-mono-medium text-xs uppercase text-surface-dark'>
+                          Añadir otra serie
                         </Text>
-                        <View className='mt-3 flex-row gap-2'>
-                          <TouchableOpacity
-                            onPress={() => handleAddExtraSet(exercise.id)}
-                            className='flex-1 items-center rounded-2xl bg-surface-dark py-3'
-                          >
-                            <Text className='font-geist-mono-semibold text-xs uppercase text-surface-card'>
-                              Sí, agregar
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={() => handleContinueWithoutExtra(exercise.id)}
-                            className='flex-1 items-center rounded-2xl bg-surface-muted py-3'
-                          >
-                            <Text className='font-geist-mono-semibold text-xs uppercase text-surface-dark'>
-                              {isLastExercise ? 'Terminar' : 'Siguiente'}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
+                      </TouchableOpacity>
                     ) : null}
                   </View>
                 ) : null}
