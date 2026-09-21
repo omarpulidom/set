@@ -46,9 +46,9 @@ const ExerciseRow = memo(function ExerciseRow({
         </Text>
       </View>
       {selected ? (
-        <Feather name='check' size={17} color={Colors.ink.soft} />
+        <Feather name='check' size={17} color={Colors.ink.soft} className='mr-2' />
       ) : (
-        <Feather name='plus' size={18} color={Colors.surface.dark} />
+        <Feather name='plus' size={18} color={Colors.surface.dark} className='mr-2' />
       )}
     </TouchableOpacity>
   )
