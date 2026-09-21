@@ -23,17 +23,34 @@ function formatCompletedAt(isoDate: string) {
   }).format(new Date(isoDate))
 }
 
-function recentMonths() {
-  const today = new Date()
-  return Array.from(
-    {
-      length: 6,
-    },
-    (_, index) => new Date(today.getFullYear(), today.getMonth() - index, 1),
-  )
+function trainingMonths(completedDays: Set<string>) {
+  const monthKeys = new Set<string>()
+
+  for (const completedDay of completedDays) {
+    if (/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/.test(completedDay)) {
+      monthKeys.add(completedDay.slice(0, 7))
+    }
+  }
+
+  return Array.from(monthKeys)
+    .sort((first, second) => second.localeCompare(first))
+    .map((monthKey) => {
+      const [year, month] = monthKey.split('-').map(Number)
+      return new Date(year, month - 1, 1)
+    })
 }
 
 function MonthlyTrainingGrid({ completedDays }: { completedDays: Set<string> }) {
+  const months = trainingMonths(completedDays)
+
+  if (months.length === 0) {
+    return (
+      <View className='mt-5'>
+        <Text className='font-geist-mono text-sm text-ink-muted'>Sin entrenamientos aún.</Text>
+      </View>
+    )
+  }
+
   return (
     <View className='mt-4 flex-row gap-3'>
       {[
@@ -42,7 +59,7 @@ function MonthlyTrainingGrid({ completedDays }: { completedDays: Set<string> }) 
         2,
       ].map((column) => (
         <View key={column} className='flex-1 gap-3'>
-          {recentMonths()
+          {months
             .filter((_, index) => index % 3 === column)
             .map((month) => {
               const year = month.getFullYear()
@@ -57,17 +74,14 @@ function MonthlyTrainingGrid({ completedDays }: { completedDays: Set<string> }) 
                 .toUpperCase()
 
               return (
-                <View
-                  key={`${year}-${monthIndex}`}
-                  className='aspect-square rounded-3xl bg-surface-muted p-3'
-                >
+                <View key={`${year}-${monthIndex}`} className='rounded-3xl bg-surface-muted p-3'>
                   <View className='flex-row items-center justify-between px-1 pt-1'>
-                    <Text className='font-geist-mono text-xs tracking-[1px] text-ink-muted'>
+                    <Text className='font-geist-mono-semibold text-sm tracking-[1px] text-ink-muted'>
                       {monthName}
                     </Text>
-                    <Text className='font-geist-mono text-[10px] text-ink-muted'>{year}</Text>
+                    <Text className='font-geist-mono text-xs text-ink-muted'>{year}</Text>
                   </View>
-                  <View className='mt-auto gap-1'>
+                  <View className='mt-3 gap-1'>
                     {Array.from(
                       {
                         length: 6,
@@ -256,23 +270,18 @@ export default function TicketsTab() {
           </Text>
           <View className='mt-5'>
             {routines.length === 0 ? (
-              <View className='items-center rounded-3xl border border-dashed border-border-dashed bg-surface-muted px-4 py-10'>
-                <Feather name='clipboard' size={22} color={Colors.ink.soft} />
-                <Text className='mt-3 text-center font-geist-mono-semibold text-sm text-surface-dark'>
-                  Sin rutinas
-                </Text>
-                <Text className='mt-1 text-center font-geist-mono text-xs text-ink-muted'>
-                  Crea una para empezar.
-                </Text>
+              <View className='flex-row items-center justify-between'>
+                <Text className='font-geist-mono text-sm text-ink-muted'>Sin rutinas aún.</Text>
                 <TouchableOpacity
                   onPress={() => {
                     routineSheetRef.current?.dismiss()
                     router.push('/routine/new')
                   }}
-                  className='mt-5 rounded-2xl bg-surface-dark px-4 py-3'
+                  className='flex-row items-center'
                 >
-                  <Text className='font-geist-mono-semibold text-xs text-surface-card'>
-                    CREAR RUTINA
+                  <Feather name='plus' size={14} color={Colors.surface.dark} />
+                  <Text className='ml-1.5 font-geist-mono-semibold text-xs uppercase text-surface-dark'>
+                    Crear
                   </Text>
                 </TouchableOpacity>
               </View>
