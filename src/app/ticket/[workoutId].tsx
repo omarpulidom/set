@@ -163,11 +163,11 @@ export default function TicketDetailScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 12,
+          paddingTop: 4,
           paddingBottom: 40,
         }}
       >
-        <View className='mt-4 flex-row justify-center gap-1.5'>
+        <View className='mt-2 flex-row justify-center gap-1.5'>
           {[
             0,
             1,
@@ -190,7 +190,7 @@ export default function TicketDetailScreen() {
           style={{
             width: windowWidth,
             marginLeft: -20,
-            marginTop: 8,
+            marginTop: 6,
           }}
           contentContainerStyle={{
             alignItems: 'flex-start',
