@@ -157,7 +157,15 @@ function ExerciseChart({
   )
 }
 
-function EmptyReport({ label }: { label: string }) {
+function EmptyReport({ label, centered = false }: { label: string; centered?: boolean }) {
+  if (centered) {
+    return (
+      <View className='flex-1 items-center justify-center px-8'>
+        <Text className='text-center font-geist-mono text-sm text-ink-muted'>{label}</Text>
+      </View>
+    )
+  }
+
   return <Text className='py-8 text-center font-geist-mono text-sm text-ink-muted'>{label}</Text>
 }
 
@@ -446,6 +454,7 @@ export default function ArchiveTab() {
           <ScrollView
             className='flex-1'
             contentContainerStyle={{
+              flexGrow: 1,
               paddingBottom: 36,
             }}
             showsVerticalScrollIndicator={false}
@@ -464,39 +473,43 @@ export default function ArchiveTab() {
 
             {isNow ? (
               <>
-                <Text className='mt-7 font-geist-mono text-[10px] uppercase tracking-[2px] text-ink-muted'>
+                <Text className='mt-4 font-geist-mono text-[10px] uppercase tracking-[2px] text-ink-muted'>
                   Medidas actuales
                 </Text>
                 {definitions.length === 0 ? (
                   <EmptyReport label='Aún no has registrado medidas.' />
                 ) : (
-                  <View className='mt-3 gap-3'>
-                    {definitions.map((definition) => {
+                  <View className='mt-3 border-l-2 border-surface-dark pl-3'>
+                    {definitions.map((definition, index) => {
                       const latest = latestMeasurement(definition.id, records)
                       return (
                         <TouchableOpacity
                           key={definition.id}
                           onPress={() => openMeasurement(definition)}
-                          className='rounded-3xl border border-border-soft bg-surface-muted p-4'
+                          className={index === 0 ? 'py-3' : 'border-t border-border-soft py-3'}
                         >
-                          <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
-                            {definition.name}
-                          </Text>
-                          <View className='mt-2 flex-row items-baseline justify-between'>
-                            <Text className='font-geist-mono-semibold text-2xl text-surface-dark'>
-                              {latest ? latest.value.toLocaleString('es-MX') : '—'}
-                            </Text>
-                            <Text className='font-geist-mono text-sm text-ink-muted'>
-                              {definition.unit}
-                            </Text>
+                          <View className='flex-row items-baseline justify-between'>
+                            <View className='flex-1 pr-3'>
+                              <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
+                                {definition.name}
+                              </Text>
+                              {latest ? (
+                                <Text className='mt-1 font-geist-mono text-[10px] text-ink-muted'>
+                                  {format(new Date(latest.recordedAt), 'd MMM yyyy', {
+                                    locale: es,
+                                  })}
+                                </Text>
+                              ) : null}
+                            </View>
+                            <View className='flex-row items-baseline'>
+                              <Text className='font-geist-mono-semibold text-2xl text-surface-dark'>
+                                {latest ? latest.value.toLocaleString('es-MX') : '—'}
+                              </Text>
+                              <Text className='ml-2 font-geist-mono text-sm text-ink-muted'>
+                                {definition.unit}
+                              </Text>
+                            </View>
                           </View>
-                          {latest ? (
-                            <Text className='mt-2 font-geist-mono text-[10px] text-ink-muted'>
-                              {format(new Date(latest.recordedAt), 'd MMM yyyy', {
-                                locale: es,
-                              })}
-                            </Text>
-                          ) : null}
                         </TouchableOpacity>
                       )
                     })}
@@ -552,7 +565,7 @@ export default function ArchiveTab() {
                 )}
               </>
             ) : measurementGroups.size === 0 && exerciseGroups.size === 0 ? (
-              <EmptyReport label='Sin registros en esta semana.' />
+              <EmptyReport label='Sin registros en esta semana.' centered />
             ) : (
               <>
                 {measurementGroups.size > 0 ? (
