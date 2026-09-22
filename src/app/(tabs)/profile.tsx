@@ -4,6 +4,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
+import { useMeasurementsStore } from '@/features/measurements/measurements-store'
 import { useProfileStore } from '@/features/profile/profile-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { clearPersistedTicketPhotos } from '@/features/tickets/ticket-photo-storage'
@@ -28,7 +29,7 @@ export default function ProfileTab() {
   function clearLocalData() {
     Alert.alert(
       '¿Borrar todos los datos locales?',
-      'Se eliminarán la sesión, el perfil, las rutinas, los tickets, las fotos y la caché de la app.',
+      'Se eliminarán la sesión, el perfil, las rutinas, las medidas, los tickets, las fotos y la caché de la app.',
       [
         {
           text: 'Cancelar',
@@ -50,6 +51,7 @@ export default function ProfileTab() {
               tickets: [],
             })
             useProfileStore.getState().resetProfile()
+            useMeasurementsStore.getState().resetMeasurements()
             useGlobalStore.getState().auth.logOut()
           },
         },

@@ -18,6 +18,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
   const labels: Record<string, string> = {
     index: 'SETS',
     routines: 'RUTINAS',
+    archive: 'ARCHIVO',
     social: 'AMIGOS',
     profile: 'PERFIL',
   } as const
@@ -35,7 +36,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
             <TouchableOpacity
               key={route.key}
               onPress={() => navigation.navigate(route.name)}
-              className='items-center gap-1 px-7 py-2'
+              className='flex-1 items-center gap-1 py-2'
             >
               <Text
                 className={`font-geist-mono text-base ${focused ? 'text-zinc-950' : 'text-zinc-400'}`}

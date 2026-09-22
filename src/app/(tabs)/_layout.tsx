@@ -34,6 +34,12 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name='archive'
+          options={{
+            title: 'Archivo',
+          }}
+        />
+        <Tabs.Screen
           name='social'
           options={{
             title: 'Amigos',
