@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { StarRating } from '@/components/Elements/StarRating'
 import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
+import { useProfileStore } from '@/features/profile/profile-store'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
 
 const WEEKDAYS_SHORT = [
@@ -107,6 +108,7 @@ export default function TicketDetailScreen() {
   const { workoutId } = useLocalSearchParams<{
     workoutId?: string
   }>()
+  const username = useProfileStore((state) => state.username)
   const tickets = useTicketsStore((state) => state.tickets)
   const ticket = tickets.find((item) => item.id === workoutId)
   const ticketWidth = windowWidth - 40
@@ -132,6 +134,7 @@ export default function TicketDetailScreen() {
     edge: ticketRenderSize.width * 0.021,
   }
   if (!ticket) return null
+  const displayAuthor = username || ticket.authorName || 'Tú'
 
   return (
     <SafeAreaView
@@ -288,7 +291,7 @@ export default function TicketDetailScreen() {
                         fontSize: sizes.content * 1.25,
                       }}
                     >
-                      {formatAuthor(ticket.authorName)}
+                      {formatAuthor(displayAuthor)}
                     </Text>
                   </View>
                   <View className='flex-row justify-between'>
@@ -996,7 +999,7 @@ export default function TicketDetailScreen() {
                       fontSize: sizes.content,
                     }}
                   >
-                    {formatAuthor(ticket.authorName)}
+                    {formatAuthor(displayAuthor)}
                   </Text>
                 </View>
                 <Text
