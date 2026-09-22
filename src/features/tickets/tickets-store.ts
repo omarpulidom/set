@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import type {
   Circle,
   Routine,
+  RoutineExercise,
   TicketReaction,
   WorkoutSet,
   WorkoutTicket,
@@ -21,6 +22,7 @@ type TicketsState = {
     sets: Record<string, WorkoutSet[]>,
     photo: string,
     authorName: string,
+    exercises?: RoutineExercise[],
   ) => string
   react: (ticketId: string, reaction: TicketReaction) => void
   addMember: (circleId: string, member: string) => void
@@ -40,10 +42,11 @@ export const useTicketsStore = create<TicketsState>()(
       circles: [],
       tickets: [],
 
-      publishWorkout: (routine, durationSeconds, sets, photo, authorName) => {
+      publishWorkout: (routine, durationSeconds, sets, photo, authorName, workoutExercises) => {
         const sourceWorkoutId = generateId('workout')
         const persistedPhoto = persistTicketPhoto(photo, sourceWorkoutId)
-        const exercises = routine.exercises.map((exercise) => ({
+        const exercisesForTicket = workoutExercises ?? routine.exercises
+        const exercises = exercisesForTicket.map((exercise) => ({
           id: exercise.id,
           catalogExerciseId: exercise.catalogExerciseId,
           name: exercise.name,
@@ -55,7 +58,7 @@ export const useTicketsStore = create<TicketsState>()(
         const completedSets = exercises.flatMap((exercise) => exercise.sets)
         const volume = completedSets.reduce((total, item) => total + item.weightKg * item.reps, 0)
         const totalReps = completedSets.reduce((total, item) => total + item.reps, 0)
-        const plannedSets = routine.exercises.reduce(
+        const plannedSets = exercisesForTicket.reduce(
           (total, exercise) => total + exercise.targetSets,
           0,
         )

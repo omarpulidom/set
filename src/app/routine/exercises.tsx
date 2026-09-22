@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react'
 import { FlatList, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,6 +14,7 @@ import {
   imageForExercise,
 } from '@/features/exercises/catalog'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
+import { useWorkoutExerciseSelectionStore } from '@/features/exercises/workout-exercise-selection-store'
 
 const EXERCISE_ROW_HEIGHT = 92
 
@@ -56,14 +57,29 @@ const ExerciseRow = memo(function ExerciseRow({
 
 export default function ExercisePickerScreen() {
   const router = useRouter()
+  const { mode } = useLocalSearchParams<{
+    mode?: string
+  }>()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<CatalogBodyPart>('all')
   const exercises = useRoutineDraftStore((state) => state.exercises)
+  const selectWorkoutExercise = useWorkoutExerciseSelectionStore((state) => state.selectExercise)
+  const excludedWorkoutExerciseIds = useWorkoutExerciseSelectionStore(
+    (state) => state.excludedExerciseIds,
+  )
+  const isWorkoutPicker = mode === 'workout'
   const deferredQuery = useDeferredValue(query)
   const selectedIds = useMemo(
-    () => new Set(exercises.map((exercise) => exercise.catalogExerciseId)),
+    () =>
+      new Set(
+        isWorkoutPicker
+          ? excludedWorkoutExerciseIds
+          : exercises.map((exercise) => exercise.catalogExerciseId),
+      ),
     [
       exercises,
+      excludedWorkoutExerciseIds,
+      isWorkoutPicker,
     ],
   )
   const results = useMemo(
@@ -77,6 +93,11 @@ export default function ExercisePickerScreen() {
   const openExercise = useCallback(
     (exercise: CatalogExercise) => {
       if (selectedIds.has(exercise.id)) return
+      if (isWorkoutPicker) {
+        selectWorkoutExercise(exercise)
+        router.back()
+        return
+      }
       router.push({
         pathname: '/routine/exercises/[exerciseId]',
         params: {
@@ -87,6 +108,8 @@ export default function ExercisePickerScreen() {
     [
       router,
       selectedIds,
+      isWorkoutPicker,
+      selectWorkoutExercise,
     ],
   )
 

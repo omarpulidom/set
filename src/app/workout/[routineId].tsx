@@ -6,13 +6,18 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
 import { NumberRuler } from '@/components/NumberRuler'
-import { getExerciseDisplayNameById, videoForExercise } from '@/features/exercises/catalog'
-import type { WorkoutSet } from '@/features/gym/types'
+import {
+  type CatalogExercise,
+  getExerciseDisplayNameById,
+  videoForExercise,
+} from '@/features/exercises/catalog'
+import { useWorkoutExerciseSelectionStore } from '@/features/exercises/workout-exercise-selection-store'
+import type { RoutineExercise, WorkoutSet } from '@/features/gym/types'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 
 const KG_PER_LB = 0.45359237
@@ -51,6 +56,10 @@ function defaultSets(count: number): WorkoutSet[] {
 
 function setKey(exerciseId: string, setIndex: number) {
   return `${exerciseId}#${setIndex}`
+}
+
+function isAddedDuringWorkout(exerciseId: string) {
+  return exerciseId.startsWith('workout-exercise-')
 }
 
 function WorkoutSheetBackdrop(props: BottomSheetBackdropProps) {
@@ -105,6 +114,9 @@ export default function WorkoutScreen() {
   const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
 
   const [seconds, setSeconds] = useState(0)
+  const [workoutExercises, setWorkoutExercises] = useState<RoutineExercise[]>(
+    () => routine?.exercises ?? [],
+  )
   const [expandedId, setExpandedId] = useState<string | undefined>(() => routine?.exercises[0]?.id)
   const [sets, setSets] = useState<Record<string, WorkoutSet[]>>(() =>
     routine
@@ -125,17 +137,49 @@ export default function WorkoutScreen() {
   const [draftWeightKg, setDraftWeightKg] = useState(0)
   const [draftReps, setDraftReps] = useState(0)
   const sheetRef = useRef<BottomSheetModal>(null)
-  const sheetSnapPoints = useMemo(
-    () => [
-      '52%',
-    ],
-    [],
+  const selectedExercise = useWorkoutExerciseSelectionStore((state) => state.selectedExercise)
+  const clearSelectedExercise = useWorkoutExerciseSelectionStore((state) => state.clearSelection)
+  const setExcludedExerciseIds = useWorkoutExerciseSelectionStore(
+    (state) => state.setExcludedExerciseIds,
   )
+  const addExercise = useCallback((exercise: CatalogExercise) => {
+    const id = `workout-exercise-${exercise.id}-${Date.now().toString(36)}`
+    const workoutExercise: RoutineExercise = {
+      id,
+      catalogExerciseId: exercise.id,
+      name: exercise.name,
+      targetSets: 1,
+      targetReps: 0,
+    }
+
+    setWorkoutExercises((current) => [
+      ...current,
+      workoutExercise,
+    ])
+    setSets((current) => ({
+      ...current,
+      [id]: defaultSets(1),
+    }))
+    setExpandedId(id)
+  }, [])
 
   useEffect(() => {
     const timer = setInterval(() => setSeconds((value) => value + 1), 1000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!selectedExercise) return
+    if (!workoutExercises.some((exercise) => exercise.catalogExerciseId === selectedExercise.id)) {
+      addExercise(selectedExercise)
+    }
+    clearSelectedExercise()
+  }, [
+    addExercise,
+    clearSelectedExercise,
+    selectedExercise,
+    workoutExercises,
+  ])
 
   function openSheet(exerciseId: string, setIndex: number) {
     const list = sets[exerciseId] ?? []
@@ -268,21 +312,58 @@ export default function WorkoutScreen() {
     ])
   }
 
+  function removeExercise(exerciseId: string) {
+    setWorkoutExercises((current) => current.filter((exercise) => exercise.id !== exerciseId))
+    setSets((current) => {
+      const next = {
+        ...current,
+      }
+      delete next[exerciseId]
+      return next
+    })
+    setUnits((current) => {
+      const next = {
+        ...current,
+      }
+      delete next[exerciseId]
+      return next
+    })
+    setConfirmed((current) => {
+      const prefix = `${exerciseId}#`
+      return new Set(Array.from(current).filter((key) => !key.startsWith(prefix)))
+    })
+    setExpandedId((current) => (current === exerciseId ? undefined : current))
+  }
+
+  function confirmRemoveExercise(exerciseId: string, exerciseName: string) {
+    Alert.alert('¿Eliminar ejercicio?', `${exerciseName} se quitará sólo de este entrenamiento.`, [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: () => removeExercise(exerciseId),
+      },
+    ])
+  }
+
   const canFinish = useMemo(() => {
-    if (!routine || routine.exercises.length === 0) return false
-    return routine.exercises.every((exercise) => {
+    if (workoutExercises.length === 0) return false
+    return workoutExercises.every((exercise) => {
       const list = sets[exercise.id] ?? []
       if (list.length === 0) return false
       return list.every((_, idx) => confirmed.has(setKey(exercise.id, idx)))
     })
   }, [
     confirmed,
-    routine,
     sets,
+    workoutExercises,
   ])
   const editingUnit: Unit = editing ? (units[editing.exerciseId] ?? 'kg') : 'kg'
   const editingExercise = editing
-    ? routine?.exercises.find((item) => item.id === editing.exerciseId)
+    ? workoutExercises.find((item) => item.id === editing.exerciseId)
     : undefined
   const draftWeightDisplay = kgToDisplay(draftWeightKg, editingUnit)
   const maxForEditingUnit = editingUnit === 'kg' ? KG_MAX : LBS_MAX
@@ -355,15 +436,16 @@ export default function WorkoutScreen() {
           <Text className='font-geist-mono-semibold text-xl uppercase tracking-[-1px] text-surface-dark'>
             Ejercicios
           </Text>
-          <Text className='font-geist-mono text-xs text-ink-muted'>{routine.exercises.length}</Text>
+          <Text className='font-geist-mono text-xs text-ink-muted'>{workoutExercises.length}</Text>
         </View>
 
         <View className='mt-4 gap-3'>
-          {routine.exercises.map((exercise) => {
+          {workoutExercises.map((exercise) => {
             const isExpanded = expandedId === exercise.id
             const videoSource = videoForExercise(exercise.catalogExerciseId ?? exercise.id)
             const unit = units[exercise.id] ?? 'kg'
             const list = sets[exercise.id] ?? []
+            const maximumReps = Math.max(0, ...list.map((set) => set.reps))
             const activeIndex = list.findIndex((_, idx) => !confirmed.has(setKey(exercise.id, idx)))
             const allDone =
               list.length > 0 && list.every((_, idx) => confirmed.has(setKey(exercise.id, idx)))
@@ -387,9 +469,24 @@ export default function WorkoutScreen() {
                   <View className='flex-row items-center gap-3'>
                     <View className='rounded-full bg-surface-card px-2.5 py-1'>
                       <Text className='font-geist-mono text-[10px] uppercase tracking-tight text-ink-muted'>
-                        {exercise.targetSets} × {exercise.targetReps}
+                        {isAddedDuringWorkout(exercise.id)
+                          ? `${list.length} × ${maximumReps || '—'}`
+                          : `${exercise.targetSets} × ${exercise.targetReps}`}
                       </Text>
                     </View>
+                    <TouchableOpacity
+                      onPress={() =>
+                        confirmRemoveExercise(
+                          exercise.id,
+                          getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name),
+                        )
+                      }
+                      accessibilityRole='button'
+                      accessibilityLabel={`Eliminar ${getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}`}
+                      className='h-7 w-7 items-center justify-center rounded-full bg-surface-card'
+                    >
+                      <Feather name='trash-2' size={13} color={Colors.ink.soft} />
+                    </TouchableOpacity>
                     <Feather
                       name={isExpanded ? 'chevron-up' : 'chevron-down'}
                       size={18}
@@ -504,6 +601,28 @@ export default function WorkoutScreen() {
           })}
         </View>
 
+        <TouchableOpacity
+          onPress={() => {
+            setExcludedExerciseIds(
+              workoutExercises
+                .map((exercise) => exercise.catalogExerciseId)
+                .filter((exerciseId): exerciseId is string => Boolean(exerciseId)),
+            )
+            router.push({
+              pathname: '/routine/exercises',
+              params: {
+                mode: 'workout',
+              },
+            })
+          }}
+          className='mt-3 flex-row items-center self-start py-3'
+        >
+          <Feather name='plus' size={15} color={Colors.surface.dark} />
+          <Text className='ml-2 font-geist-mono-medium text-xs uppercase text-surface-dark'>
+            Agregar ejercicio
+          </Text>
+        </TouchableOpacity>
+
         <View className='mt-8'>
           <TouchableOpacity
             disabled={!canFinish}
@@ -514,6 +633,7 @@ export default function WorkoutScreen() {
                   routineId: routine.id,
                   elapsedSeconds: String(Math.max(1, seconds)),
                   sets: JSON.stringify(sets),
+                  exercises: JSON.stringify(workoutExercises),
                 },
               })
             }
@@ -530,8 +650,6 @@ export default function WorkoutScreen() {
 
       <BottomSheetModal
         ref={sheetRef}
-        snapPoints={sheetSnapPoints}
-        enableDynamicSizing={false}
         backgroundStyle={{
           backgroundColor: Colors.surface.card,
         }}
@@ -541,7 +659,7 @@ export default function WorkoutScreen() {
         backdropComponent={WorkoutSheetBackdrop}
         onDismiss={handleSheetDismiss}
       >
-        <BottomSheetView className='flex-1 px-5 pt-2'>
+        <BottomSheetView className='px-5 pb-7 pt-2'>
           {editing && editingExercise ? (
             <>
               <View className='flex-row items-center justify-between'>

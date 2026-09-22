@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
@@ -9,7 +9,7 @@ import {
   HalftoneDiamondCamera,
   type HalftoneDiamondCameraRef,
 } from '@/components/Skia/HalftoneDiamondCamera'
-import type { WorkoutSet } from '@/features/gym/types'
+import type { RoutineExercise, WorkoutSet } from '@/features/gym/types'
 import { useProfileStore } from '@/features/profile/profile-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
@@ -20,10 +20,12 @@ export default function CreateTicketScreen() {
     routineId,
     elapsedSeconds,
     sets: serializedSets,
+    exercises: serializedExercises,
   } = useLocalSearchParams<{
     routineId?: string
     elapsedSeconds?: string
     sets?: string
+    exercises?: string
   }>()
   const routine = useRoutinesStore((state) => state.routines.find((item) => item.id === routineId))
   const { user } = useAuth()
@@ -35,6 +37,19 @@ export default function CreateTicketScreen() {
   const [capturing, setCapturing] = useState(false)
   const [signed, setSigned] = useState(false)
   const publishWorkout = useTicketsStore((state) => state.publishWorkout)
+  const workoutExercises = useMemo(() => {
+    if (!routine || !serializedExercises) return routine?.exercises ?? []
+
+    try {
+      const exercises = JSON.parse(serializedExercises) as RoutineExercise[]
+      return Array.isArray(exercises) ? exercises : routine.exercises
+    } catch {
+      return routine.exercises
+    }
+  }, [
+    routine,
+    serializedExercises,
+  ])
 
   function takePhoto() {
     if (capturing) return
@@ -78,7 +93,14 @@ export default function CreateTicketScreen() {
     try {
       const accountName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
       const authorName = username || accountName || 'Tú'
-      const ticketId = publishWorkout(routine, Number(elapsedSeconds) || 1, sets, photo, authorName)
+      const ticketId = publishWorkout(
+        routine,
+        Number(elapsedSeconds) || 1,
+        sets,
+        photo,
+        authorName,
+        workoutExercises,
+      )
       router.replace({
         pathname: '/ticket/[workoutId]',
         params: {
