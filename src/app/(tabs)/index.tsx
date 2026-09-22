@@ -76,15 +76,15 @@ function MonthlyTrainingGrid({ completedDays }: { completedDays: Set<string> }) 
               return (
                 <View
                   key={`${year}-${monthIndex}`}
-                  className='aspect-square rounded-3xl bg-surface-muted p-3'
+                  className='aspect-square rounded-3xl bg-surface-muted p-4'
                 >
-                  <View className='flex-row items-center justify-between px-1 pt-1'>
-                    <Text className='font-geist-mono text-sm tracking-[1px] text-ink-muted'>
+                  <View className='flex-row items-center justify-between'>
+                    <Text className='font-geist-mono text-xs tracking-[1px] text-ink-muted'>
                       {monthName}
                     </Text>
-                    <Text className='font-geist-mono text-sm text-ink-muted'>{year}</Text>
+                    <Text className='font-geist-mono text-xs text-ink-muted'>{year}</Text>
                   </View>
-                  <View className='mt-3 gap-1'>
+                  <View className='mt-1.5 gap-1'>
                     {Array.from(
                       {
                         length: 6,
