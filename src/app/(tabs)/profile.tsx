@@ -3,12 +3,14 @@ import { useState } from 'react'
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
+import { loadDemoData } from '@/features/dev/load-demo-data'
 import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
 import { useMeasurementsStore } from '@/features/measurements/measurements-store'
 import { useProfileStore } from '@/features/profile/profile-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import { clearPersistedTicketPhotos } from '@/features/tickets/ticket-photo-storage'
 import { useTicketsStore } from '@/features/tickets/tickets-store'
+import { clearDomainDatabase } from '@/lib/database'
 import { clearAllPersistedData } from '@/lib/mmkv'
 import { queryClient } from '@/lib/qc'
 import { useGlobalStore } from '@/store'
@@ -23,7 +25,7 @@ export default function ProfileTab() {
   function saveUsername() {
     if (!normalizedUsername) return
     setUsername(normalizedUsername)
-    Alert.alert('Perfil actualizado', 'El nuevo nombre se usará en tus próximos tickets.')
+    Alert.alert('Perfil actualizado', 'El nuevo nombre ya se mostrará en todos tus tickets.')
   }
 
   function clearLocalData() {
@@ -38,9 +40,10 @@ export default function ProfileTab() {
         {
           text: 'Borrar todo',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             clearAllPersistedData()
-            clearPersistedTicketPhotos()
+            clearDomainDatabase()
+            await clearPersistedTicketPhotos()
             queryClient.clear()
             useRoutineDraftStore.getState().reset()
             useRoutinesStore.setState({
@@ -53,6 +56,30 @@ export default function ProfileTab() {
             useProfileStore.getState().resetProfile()
             useMeasurementsStore.getState().resetMeasurements()
             useGlobalStore.getState().auth.logOut()
+          },
+        },
+      ],
+    )
+  }
+
+  function loadDemoFixtures() {
+    Alert.alert(
+      '¿Cargar datos demo?',
+      'Se reemplazarán las rutinas, medidas, tickets, fotos y círculos locales. Tu sesión permanecerá abierta.',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Cargar demo',
+          style: 'destructive',
+          onPress: async () => {
+            await loadDemoData()
+            Alert.alert(
+              'Datos demo cargados',
+              'Ya puedes revisar el historial, gráficas y workouts.',
+            )
           },
         },
       ],
@@ -93,7 +120,7 @@ export default function ProfileTab() {
             className='mt-3 border-b border-border-soft py-3 font-geist-mono text-lg text-surface-dark'
           />
           <Text className='mt-2 font-geist-mono text-[10px] leading-4 text-ink-muted'>
-            Se usará en tus próximos tickets.
+            Se mostrará en todos tus tickets.
           </Text>
           <TouchableOpacity
             onPress={saveUsername}
@@ -117,6 +144,17 @@ export default function ProfileTab() {
           <Text className='font-geist-mono text-[10px] uppercase tracking-[2px] text-ink-subtle'>
             Desarrollo
           </Text>
+          {__DEV__ ? (
+            <TouchableOpacity
+              onPress={loadDemoFixtures}
+              className='mt-4 flex-row items-center self-start'
+              accessibilityRole='button'
+              accessibilityLabel='Cargar datos demo'
+            >
+              <Feather name='database' size={14} color={Colors.ink.soft} />
+              <Text className='ml-2 font-geist-mono text-xs text-ink-muted'>Cargar datos demo</Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             onPress={clearLocalData}
             className='mt-4 flex-row items-center self-start'
