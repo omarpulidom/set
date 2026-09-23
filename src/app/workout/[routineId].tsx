@@ -200,7 +200,9 @@ export default function WorkoutScreen() {
     }
     const weightDisplay = kgToDisplay(weightKg, unit)
     const snapped = Math.round(weightDisplay / step) * step
-    setDraftWeightKg(displayToKg(snapped, unit))
+    setDraftWeightKg(
+      current && (current.weightKg > 0 || current.reps > 0) ? weightKg : displayToKg(snapped, unit),
+    )
     setDraftReps(reps)
     setEditing({
       exerciseId,
@@ -362,6 +364,9 @@ export default function WorkoutScreen() {
     workoutExercises,
   ])
   const editingUnit: Unit = editing ? (units[editing.exerciseId] ?? 'kg') : 'kg'
+  const editingConfirmed = editing
+    ? confirmed.has(setKey(editing.exerciseId, editing.setIndex))
+    : false
   const editingExercise = editing
     ? workoutExercises.find((item) => item.id === editing.exerciseId)
     : undefined
@@ -509,12 +514,13 @@ export default function WorkoutScreen() {
                         return (
                           <View
                             key={`${exercise.id}-${index}`}
-                            className={`flex-row items-stretch rounded-2xl px-3 py-3 ${isConfirmed ? 'bg-surface-soft opacity-60' : isActive ? 'bg-surface-card' : 'bg-surface-card/60'}`}
+                            className={`flex-row items-stretch rounded-2xl px-3 py-3 ${isConfirmed ? 'bg-surface-soft' : isActive ? 'bg-surface-card' : 'bg-surface-card/60'}`}
                           >
                             <TouchableOpacity
                               onPress={() => openSheet(exercise.id, index)}
-                              disabled={isConfirmed}
                               activeOpacity={0.82}
+                              accessibilityRole='button'
+                              accessibilityLabel={`${isConfirmed ? 'Editar' : 'Registrar'} serie ${index + 1}`}
                               className='flex-1 flex-row items-center'
                             >
                               <Text className='w-6 text-center font-geist-mono text-xs text-ink-muted'>
@@ -532,6 +538,9 @@ export default function WorkoutScreen() {
                               >
                                 {set.reps > 0 ? `${set.reps} reps` : '—'}
                               </Text>
+                              {isConfirmed ? (
+                                <Feather name='edit-2' size={12} color={Colors.ink.muted} />
+                              ) : null}
                             </TouchableOpacity>
                             <View className='flex-row items-center gap-1 pl-2'>
                               <TouchableOpacity
@@ -718,7 +727,7 @@ export default function WorkoutScreen() {
               >
                 <Feather name='check' size={17} color={Colors.surface.card} />
                 <Text className='ml-2 font-geist-mono-semibold text-sm uppercase tracking-tight text-surface-card'>
-                  Confirmar
+                  {editingConfirmed ? 'Guardar cambios' : 'Confirmar'}
                 </Text>
               </TouchableOpacity>
             </>
