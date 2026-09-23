@@ -319,8 +319,10 @@ export default function ArchiveTab() {
         ...reports.map((report) => ({
           key: report.key,
           range: report,
-          title: 'Semana',
-          subtitle: rangeLabel(report),
+          title: 'Mes',
+          subtitle: format(report.start, 'MMMM yyyy', {
+            locale: es,
+          }),
         })),
       ]
 
@@ -565,7 +567,10 @@ export default function ArchiveTab() {
                 )}
               </>
             ) : measurementGroups.size === 0 && exerciseGroups.size === 0 ? (
-              <EmptyReport label='Sin registros en esta semana.' centered />
+              <EmptyReport
+                label={range ? 'Sin registros en este rango.' : 'Sin registros en este mes.'}
+                centered
+              />
             ) : (
               <>
                 {measurementGroups.size > 0 ? (
@@ -669,7 +674,7 @@ export default function ArchiveTab() {
       ) : null}
       <FlatList
         data={reportPages}
-        key={range ? reportPages[0]?.key : 'weekly-reports'}
+        key={range ? reportPages[0]?.key : 'monthly-reports'}
         renderItem={renderReport}
         horizontal
         pagingEnabled

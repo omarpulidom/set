@@ -1,4 +1,4 @@
-import { endOfDay, endOfWeek, isWithinInterval, startOfDay, startOfWeek } from 'date-fns'
+import { endOfDay, endOfMonth, isWithinInterval, startOfDay, startOfMonth } from 'date-fns'
 import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import type { WorkoutTicket } from '@/features/gym/types'
 import type {
@@ -23,24 +23,16 @@ export type ExerciseProgressPoint = {
   volumeKg: number
 }
 
-export type WeekReport = DateRange & {
+export type MonthReport = DateRange & {
   key: string
 }
 
-export function startOfLocalWeek(date: Date) {
-  return startOfWeek(date, {
-    weekStartsOn: 1,
-  })
-}
-
-export function weekReportFor(date: Date): WeekReport {
-  const start = startOfLocalWeek(date)
+export function monthReportFor(date: Date): MonthReport {
+  const start = startOfMonth(date)
   return {
-    key: start.toISOString().slice(0, 10),
+    key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`,
     start,
-    end: endOfWeek(date, {
-      weekStartsOn: 1,
-    }),
+    end: endOfMonth(date),
   }
 }
 
@@ -117,18 +109,18 @@ export function reportsFromHistory(records: MeasurementRecord[], tickets: Workou
     .map((value) => new Date(value))
     .filter((date) => !Number.isNaN(date.getTime()))
 
-  const currentWeek = weekReportFor(new Date())
+  const currentMonth = monthReportFor(new Date())
   if (dates.length === 0)
     return [
-      currentWeek,
+      currentMonth,
     ]
 
-  const earliest = startOfLocalWeek(new Date(Math.min(...dates.map((date) => date.getTime()))))
-  const reports: WeekReport[] = []
-  let cursor = currentWeek.start
+  const earliest = startOfMonth(new Date(Math.min(...dates.map((date) => date.getTime()))))
+  const reports: MonthReport[] = []
+  let cursor = currentMonth.start
   while (cursor.getTime() >= earliest.getTime()) {
-    reports.push(weekReportFor(cursor))
-    cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() - 7)
+    reports.push(monthReportFor(cursor))
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1)
   }
   return reports
 }
