@@ -6,7 +6,17 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
@@ -106,6 +116,130 @@ function UnitToggle({ value, onChange }: { value: Unit; onChange: (value: Unit) 
   )
 }
 
+type SetDraft = {
+  exerciseId: string
+  setIndex: number
+  exerciseName: string
+  unit: Unit
+  weightKg: number
+  reps: number
+  confirmed: boolean
+}
+
+type SetSheetHandle = {
+  open: (draft: SetDraft) => void
+}
+
+const SetSheet = memo(
+  forwardRef<
+    SetSheetHandle,
+    {
+      onConfirm: (exerciseId: string, setIndex: number, weightKg: number, reps: number) => void
+    }
+  >(function SetSheet({ onConfirm }, ref) {
+    const sheetRef = useRef<BottomSheetModal>(null)
+    const [draft, setDraft] = useState<SetDraft | null>(null)
+    const [weightKg, setWeightKg] = useState(0)
+    const [reps, setReps] = useState(0)
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        open(nextDraft) {
+          setDraft(nextDraft)
+          setWeightKg(nextDraft.weightKg)
+          setReps(nextDraft.reps)
+        },
+      }),
+      [],
+    )
+
+    useLayoutEffect(() => {
+      if (draft) sheetRef.current?.present()
+    }, [
+      draft,
+    ])
+
+    const unit = draft?.unit ?? 'kg'
+    return (
+      <BottomSheetModal
+        ref={sheetRef}
+        backgroundStyle={{
+          backgroundColor: Colors.surface.card,
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: Colors.ink.soft,
+        }}
+        backdropComponent={WorkoutSheetBackdrop}
+        onDismiss={() => setDraft(null)}
+      >
+        <BottomSheetView className='px-5 pb-7 pt-2'>
+          {draft ? (
+            <>
+              <View className='flex-row items-center justify-between'>
+                <View>
+                  <Text className='font-geist-mono-semibold text-xl text-surface-dark'>
+                    Serie {draft.setIndex + 1}
+                  </Text>
+                  <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
+                    {draft.exerciseName}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => sheetRef.current?.dismiss()}
+                  accessibilityRole='button'
+                  accessibilityLabel='Cerrar'
+                  className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
+                >
+                  <Feather name='x' size={18} color={Colors.surface.dark} />
+                </TouchableOpacity>
+              </View>
+              <View className='mt-4'>
+                <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
+                  Peso ({unit})
+                </Text>
+                <NumberRuler
+                  label=''
+                  value={kgToDisplay(weightKg, unit)}
+                  min={0}
+                  max={unit === 'kg' ? KG_MAX : LBS_MAX}
+                  step={unit === 'kg' ? KG_STEP : LBS_STEP}
+                  onValueChange={(value) => setWeightKg(displayToKg(value, unit))}
+                />
+              </View>
+              <View className='mt-2'>
+                <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
+                  Reps
+                </Text>
+                <NumberRuler
+                  label=''
+                  value={reps}
+                  min={MIN_REPS}
+                  max={REPS_MAX}
+                  step={1}
+                  onValueChange={setReps}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  onConfirm(draft.exerciseId, draft.setIndex, weightKg, reps)
+                  sheetRef.current?.dismiss()
+                }}
+                className='mt-6 flex-row items-center justify-center rounded-3xl bg-surface-dark py-4'
+              >
+                <Feather name='check' size={17} color={Colors.surface.card} />
+                <Text className='ml-2 font-geist-mono-semibold text-sm uppercase tracking-tight text-surface-card'>
+                  {draft.confirmed ? 'Guardar cambios' : 'Confirmar'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
+        </BottomSheetView>
+      </BottomSheetModal>
+    )
+  }),
+)
+
 export default function WorkoutScreen() {
   const router = useRouter()
   const { routineId } = useLocalSearchParams<{
@@ -130,13 +264,7 @@ export default function WorkoutScreen() {
   )
   const [units, setUnits] = useState<Record<string, Unit>>({})
   const [confirmed, setConfirmed] = useState<Set<string>>(() => new Set())
-  const [editing, setEditing] = useState<{
-    exerciseId: string
-    setIndex: number
-  } | null>(null)
-  const [draftWeightKg, setDraftWeightKg] = useState(0)
-  const [draftReps, setDraftReps] = useState(0)
-  const sheetRef = useRef<BottomSheetModal>(null)
+  const sheetRef = useRef<SetSheetHandle>(null)
   const selectedExercise = useWorkoutExerciseSelectionStore((state) => state.selectedExercise)
   const clearSelectedExercise = useWorkoutExerciseSelectionStore((state) => state.clearSelection)
   const setExcludedExerciseIds = useWorkoutExerciseSelectionStore(
@@ -200,45 +328,43 @@ export default function WorkoutScreen() {
     }
     const weightDisplay = kgToDisplay(weightKg, unit)
     const snapped = Math.round(weightDisplay / step) * step
-    setDraftWeightKg(
-      current && (current.weightKg > 0 || current.reps > 0) ? weightKg : displayToKg(snapped, unit),
-    )
-    setDraftReps(reps)
-    setEditing({
+    const exercise = workoutExercises.find((item) => item.id === exerciseId)
+    if (!exercise) return
+    sheetRef.current?.open({
       exerciseId,
       setIndex,
+      exerciseName: getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name),
+      unit,
+      weightKg:
+        current && (current.weightKg > 0 || current.reps > 0)
+          ? weightKg
+          : displayToKg(snapped, unit),
+      reps,
+      confirmed: confirmed.has(setKey(exerciseId, setIndex)),
     })
-    sheetRef.current?.present()
   }
 
-  function closeSheet() {
-    sheetRef.current?.dismiss()
-  }
-
-  function handleSheetDismiss() {
-    setEditing(null)
-  }
-
-  function confirmDraft() {
-    if (!editing) return
-    setSets((current) => ({
-      ...current,
-      [editing.exerciseId]: (current[editing.exerciseId] ?? []).map((set, index) =>
-        index === editing.setIndex
-          ? {
-              weightKg: draftWeightKg,
-              reps: Math.max(MIN_REPS, Math.round(draftReps)),
-            }
-          : set,
-      ),
-    }))
-    setConfirmed((current) => {
-      const next = new Set(current)
-      next.add(setKey(editing.exerciseId, editing.setIndex))
-      return next
-    })
-    closeSheet()
-  }
+  const confirmDraft = useCallback(
+    (exerciseId: string, setIndex: number, weightKg: number, reps: number) => {
+      setSets((current) => ({
+        ...current,
+        [exerciseId]: (current[exerciseId] ?? []).map((set, index) =>
+          index === setIndex
+            ? {
+                weightKg,
+                reps: Math.max(MIN_REPS, Math.round(reps)),
+              }
+            : set,
+        ),
+      }))
+      setConfirmed((current) => {
+        const next = new Set(current)
+        next.add(setKey(exerciseId, setIndex))
+        return next
+      })
+    },
+    [],
+  )
 
   function toggleExpanded(exerciseId: string) {
     setExpandedId((current) => (current === exerciseId ? undefined : exerciseId))
@@ -363,16 +489,6 @@ export default function WorkoutScreen() {
     sets,
     workoutExercises,
   ])
-  const editingUnit: Unit = editing ? (units[editing.exerciseId] ?? 'kg') : 'kg'
-  const editingConfirmed = editing
-    ? confirmed.has(setKey(editing.exerciseId, editing.setIndex))
-    : false
-  const editingExercise = editing
-    ? workoutExercises.find((item) => item.id === editing.exerciseId)
-    : undefined
-  const draftWeightDisplay = kgToDisplay(draftWeightKg, editingUnit)
-  const maxForEditingUnit = editingUnit === 'kg' ? KG_MAX : LBS_MAX
-  const stepForEditingUnit = editingUnit === 'kg' ? KG_STEP : LBS_STEP
   const elapsed = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
 
   if (!routine) {
@@ -657,83 +773,7 @@ export default function WorkoutScreen() {
         </View>
       </ScrollView>
 
-      <BottomSheetModal
-        ref={sheetRef}
-        backgroundStyle={{
-          backgroundColor: Colors.surface.card,
-        }}
-        handleIndicatorStyle={{
-          backgroundColor: Colors.ink.soft,
-        }}
-        backdropComponent={WorkoutSheetBackdrop}
-        onDismiss={handleSheetDismiss}
-      >
-        <BottomSheetView className='px-5 pb-7 pt-2'>
-          {editing && editingExercise ? (
-            <>
-              <View className='flex-row items-center justify-between'>
-                <View>
-                  <Text className='font-geist-mono-semibold text-xl text-surface-dark'>
-                    Serie {editing.setIndex + 1}
-                  </Text>
-                  <Text className='mt-1 font-geist-mono text-xs text-ink-muted'>
-                    {getExerciseDisplayNameById(
-                      editingExercise.catalogExerciseId,
-                      editingExercise.name,
-                    )}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={closeSheet}
-                  accessibilityRole='button'
-                  accessibilityLabel='Cerrar'
-                  className='h-10 w-10 items-center justify-center rounded-full bg-surface-muted'
-                >
-                  <Feather name='x' size={18} color={Colors.surface.dark} />
-                </TouchableOpacity>
-              </View>
-
-              <View className='mt-4'>
-                <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
-                  Peso ({editingUnit})
-                </Text>
-                <NumberRuler
-                  label=''
-                  value={draftWeightDisplay}
-                  min={0}
-                  max={maxForEditingUnit}
-                  step={stepForEditingUnit}
-                  onValueChange={(value) => setDraftWeightKg(displayToKg(value, editingUnit))}
-                />
-              </View>
-
-              <View className='mt-2'>
-                <Text className='font-geist-mono text-[10px] uppercase tracking-[1.5px] text-ink-muted'>
-                  Reps
-                </Text>
-                <NumberRuler
-                  label=''
-                  value={draftReps}
-                  min={MIN_REPS}
-                  max={REPS_MAX}
-                  step={1}
-                  onValueChange={setDraftReps}
-                />
-              </View>
-
-              <TouchableOpacity
-                onPress={confirmDraft}
-                className='mt-6 flex-row items-center justify-center rounded-3xl bg-surface-dark py-4'
-              >
-                <Feather name='check' size={17} color={Colors.surface.card} />
-                <Text className='ml-2 font-geist-mono-semibold text-sm uppercase tracking-tight text-surface-card'>
-                  {editingConfirmed ? 'Guardar cambios' : 'Confirmar'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : null}
-        </BottomSheetView>
-      </BottomSheetModal>
+      <SetSheet ref={sheetRef} onConfirm={confirmDraft} />
     </SafeAreaView>
   )
 }

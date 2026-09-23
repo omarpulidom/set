@@ -76,6 +76,26 @@ export function readTicketsAndCircles() {
     'SELECT workout_id, circle_name FROM workout_circles ORDER BY workout_id, sort_order',
   ).rows._array
 
+  const exercisesByWorkout = new Map<string, WorkoutExerciseRow[]>()
+  const setsByExercise = new Map<string, WorkoutSetRow[]>()
+  const circlesByWorkout = new Map<string, string[]>()
+  for (const exercise of exerciseRows) {
+    const group = exercisesByWorkout.get(exercise.workout_id) ?? []
+    group.push(exercise)
+    exercisesByWorkout.set(exercise.workout_id, group)
+  }
+  for (const set of setRows) {
+    const key = `${set.workout_id}#${set.exercise_order}`
+    const group = setsByExercise.get(key) ?? []
+    group.push(set)
+    setsByExercise.set(key, group)
+  }
+  for (const circle of workoutCircleRows) {
+    const group = circlesByWorkout.get(circle.workout_id) ?? []
+    group.push(circle.circle_name)
+    circlesByWorkout.set(circle.workout_id, group)
+  }
+
   const tickets: WorkoutTicket[] = workoutRows.map((row) => ({
     id: row.id,
     sourceWorkoutId: row.source_workout_id,
@@ -91,26 +111,18 @@ export function readTicketsAndCircles() {
     completionPercentage: row.completion_percentage,
     volumeChangePercentage: row.volume_change_percentage ?? undefined,
     sessionNumber: row.session_number,
-    exercises: exerciseRows
-      .filter((exercise) => exercise.workout_id === row.id)
-      .map((exercise) => ({
-        id: exercise.result_id,
-        catalogExerciseId: exercise.catalog_exercise_id ?? undefined,
-        name: exercise.name,
-        sets: setRows
-          .filter(
-            (set) => set.workout_id === row.id && set.exercise_order === exercise.exercise_order,
-          )
-          .map((set) => ({
-            weightKg: set.weight_kg,
-            reps: set.reps,
-          })),
+    exercises: (exercisesByWorkout.get(row.id) ?? []).map((exercise) => ({
+      id: exercise.result_id,
+      catalogExerciseId: exercise.catalog_exercise_id ?? undefined,
+      name: exercise.name,
+      sets: (setsByExercise.get(`${row.id}#${exercise.exercise_order}`) ?? []).map((set) => ({
+        weightKg: set.weight_kg,
+        reps: set.reps,
       })),
+    })),
     photo: row.photo_uri,
     signedByAuthor: row.signed_by_author === 1,
-    circles: workoutCircleRows
-      .filter((circle) => circle.workout_id === row.id)
-      .map((circle) => circle.circle_name),
+    circles: circlesByWorkout.get(row.id) ?? [],
     authorName: row.author_name,
     reactions: {
       fire: row.reaction_fire,
@@ -125,10 +137,14 @@ export function readTicketsAndCircles() {
   const memberRows = database.execute<CircleMemberRow>(
     'SELECT circle_id, member FROM circle_members ORDER BY circle_id, sort_order',
   ).rows._array
+  const membersByCircle = new Map<string, string[]>()
+  for (const member of memberRows) {
+    const group = membersByCircle.get(member.circle_id) ?? []
+    group.push(member.member)
+    membersByCircle.set(member.circle_id, group)
+  }
   const circles: Circle[] = circleRows.map((circle) => {
-    const members = memberRows
-      .filter((member) => member.circle_id === circle.id)
-      .map((member) => member.member)
+    const members = membersByCircle.get(circle.id) ?? []
     return {
       id: circle.id,
       name: circle.name,
