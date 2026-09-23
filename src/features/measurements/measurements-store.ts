@@ -1,8 +1,13 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
-import { zustandMMKVStorage } from '@/lib/mmkv'
-
-export const MEASUREMENTS_STORE_NAME = 'set-measurements-v1'
+import {
+  deleteMeasurementRecord,
+  insertMeasurement,
+  insertMeasurementRecord,
+  readMeasurements,
+  replaceAllMeasurements,
+  updateMeasurementDefinition,
+  updateMeasurementRecord,
+} from '@/lib/database'
 
 export type MeasurementDefinition = {
   id: string
@@ -35,6 +40,7 @@ type MeasurementsState = {
     patch: Pick<MeasurementDefinition, 'name' | 'unit'>,
   ) => void
   deleteRecord: (recordId: string) => void
+  replaceMeasurements: (definitions: MeasurementDefinition[], records: MeasurementRecord[]) => void
   resetMeasurements: () => void
 }
 
@@ -46,99 +52,113 @@ function validValue(value: number) {
   return Number.isFinite(value)
 }
 
-export const useMeasurementsStore = create<MeasurementsState>()(
-  persist(
-    (set) => ({
-      definitions: [],
-      records: [],
-      createMeasurement: (input) => {
-        const name = input.name.trim()
-        const unit = input.unit.trim()
-        if (!name || !unit || !validValue(input.value)) return undefined
+const initialMeasurements = readMeasurements()
 
-        const id = generateId('measurement')
-        const now = new Date().toISOString()
-        set((state) => ({
-          definitions: [
-            ...state.definitions,
-            {
-              id,
+export const useMeasurementsStore = create<MeasurementsState>()((set, get) => ({
+  definitions: initialMeasurements.definitions,
+  records: initialMeasurements.records,
+  createMeasurement: (input) => {
+    const name = input.name.trim()
+    const unit = input.unit.trim()
+    if (!name || !unit || !validValue(input.value)) return undefined
+
+    const id = generateId('measurement')
+    const recordId = generateId('measurement-record')
+    const now = new Date().toISOString()
+    const definition: MeasurementDefinition = {
+      id,
+      name,
+      unit,
+      createdAt: now,
+    }
+    const record: MeasurementRecord = {
+      id: recordId,
+      measurementId: id,
+      value: input.value,
+      recordedAt: now,
+    }
+    insertMeasurement(definition, record, get().definitions.length)
+    set((state) => ({
+      definitions: [
+        ...state.definitions,
+        definition,
+      ],
+      records: [
+        ...state.records,
+        record,
+      ],
+    }))
+    return id
+  },
+  addRecord: (measurementId, value) => {
+    if (!validValue(value)) return
+    if (!get().definitions.some((definition) => definition.id === measurementId)) return
+    const record: MeasurementRecord = {
+      id: generateId('measurement-record'),
+      measurementId,
+      value,
+      recordedAt: new Date().toISOString(),
+    }
+    insertMeasurementRecord(record)
+    set((state) => ({
+      records: [
+        ...state.records,
+        record,
+      ],
+    }))
+  },
+  updateRecord: (recordId, value) => {
+    if (!validValue(value)) return
+    updateMeasurementRecord(recordId, value)
+    set((state) => ({
+      records: state.records.map((record) =>
+        record.id === recordId
+          ? {
+              ...record,
+              value,
+            }
+          : record,
+      ),
+    }))
+  },
+  updateDefinition: (measurementId, patch) => {
+    const name = patch.name.trim()
+    const unit = patch.unit.trim()
+    if (!name || !unit) return
+    updateMeasurementDefinition(measurementId, {
+      name,
+      unit,
+    })
+    set((state) => ({
+      definitions: state.definitions.map((definition) =>
+        definition.id === measurementId
+          ? {
+              ...definition,
               name,
               unit,
-              createdAt: now,
-            },
-          ],
-          records: [
-            ...state.records,
-            {
-              id: generateId('measurement-record'),
-              measurementId: id,
-              value: input.value,
-              recordedAt: now,
-            },
-          ],
-        }))
-        return id
-      },
-      addRecord: (measurementId, value) => {
-        if (!validValue(value)) return
-        set((state) => {
-          if (!state.definitions.some((definition) => definition.id === measurementId)) return state
-          return {
-            records: [
-              ...state.records,
-              {
-                id: generateId('measurement-record'),
-                measurementId,
-                value,
-                recordedAt: new Date().toISOString(),
-              },
-            ],
-          }
-        })
-      },
-      updateRecord: (recordId, value) => {
-        if (!validValue(value)) return
-        set((state) => ({
-          records: state.records.map((record) =>
-            record.id === recordId
-              ? {
-                  ...record,
-                  value,
-                }
-              : record,
-          ),
-        }))
-      },
-      updateDefinition: (measurementId, patch) => {
-        const name = patch.name.trim()
-        const unit = patch.unit.trim()
-        if (!name || !unit) return
-        set((state) => ({
-          definitions: state.definitions.map((definition) =>
-            definition.id === measurementId
-              ? {
-                  ...definition,
-                  name,
-                  unit,
-                }
-              : definition,
-          ),
-        }))
-      },
-      deleteRecord: (recordId) =>
-        set((state) => ({
-          records: state.records.filter((record) => record.id !== recordId),
-        })),
-      resetMeasurements: () =>
-        set({
-          definitions: [],
-          records: [],
-        }),
-    }),
-    {
-      name: MEASUREMENTS_STORE_NAME,
-      storage: createJSONStorage(() => zustandMMKVStorage),
-    },
-  ),
-)
+            }
+          : definition,
+      ),
+    }))
+  },
+  deleteRecord: (recordId) => {
+    deleteMeasurementRecord(recordId)
+    set((state) => ({
+      records: state.records.filter((record) => record.id !== recordId),
+    }))
+  },
+  replaceMeasurements: (definitions, records) => {
+    replaceAllMeasurements(definitions, records)
+    set({
+      definitions,
+      records,
+    })
+  },
+  resetMeasurements: () => {
+    replaceAllMeasurements([], [])
+    set({
+      definitions: [],
+      records: [],
+    })
+  },
+}))

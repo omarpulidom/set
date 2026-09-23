@@ -81,7 +81,7 @@ export default function CreateTicketScreen() {
     takePhoto()
   }
 
-  function finish() {
+  async function finish() {
     if (!photo || !signed || !routine) return
     let sets: Record<string, WorkoutSet[]> = {}
     try {
@@ -93,7 +93,7 @@ export default function CreateTicketScreen() {
     try {
       const accountName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
       const authorName = username || accountName || 'Tú'
-      const ticketId = publishWorkout(
+      const ticketId = await publishWorkout(
         routine,
         Number(elapsedSeconds) || 1,
         sets,

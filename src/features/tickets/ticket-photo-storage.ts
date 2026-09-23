@@ -1,17 +1,12 @@
-import { Directory, EncodingType, File, Paths } from 'expo-file-system'
+import NitroFS from 'react-native-nitro-fs'
 
 const TICKET_PHOTOS_DIRECTORY_NAME = 'ticket-photos'
 
 function getTicketPhotosDirectory() {
-  const directory = new Directory(Paths.document, TICKET_PHOTOS_DIRECTORY_NAME)
-  directory.create({
-    idempotent: true,
-    intermediates: true,
-  })
-  return directory
+  return `${NitroFS.DOCUMENT_DIR}/${TICKET_PHOTOS_DIRECTORY_NAME}`
 }
 
-export function persistTicketPhoto(photo: string, ticketId: string) {
+export async function persistTicketPhoto(photo: string, ticketId: string) {
   if (!photo.startsWith('data:image/')) return photo
 
   const separatorIndex = photo.indexOf(',')
@@ -19,18 +14,14 @@ export function persistTicketPhoto(photo: string, ticketId: string) {
     throw new Error('La foto del ticket no tiene un formato válido.')
   }
 
-  const file = new File(getTicketPhotosDirectory(), `${ticketId}.jpg`)
-  file.create({
-    intermediates: true,
-    overwrite: true,
-  })
-  file.write(photo.slice(separatorIndex + 1), {
-    encoding: EncodingType.Base64,
-  })
-  return file.uri
+  const directory = getTicketPhotosDirectory()
+  if (!(await NitroFS.exists(directory))) await NitroFS.mkdir(directory)
+  const path = `${directory}/${ticketId}.jpg`
+  await NitroFS.writeFile(path, photo.slice(separatorIndex + 1), 'base64')
+  return path.startsWith('file://') ? path : `file://${path}`
 }
 
-export function clearPersistedTicketPhotos() {
-  const directory = new Directory(Paths.document, TICKET_PHOTOS_DIRECTORY_NAME)
-  if (directory.exists) directory.delete()
+export async function clearPersistedTicketPhotos() {
+  const directory = getTicketPhotosDirectory()
+  if (await NitroFS.exists(directory)) await NitroFS.unlink(directory)
 }

@@ -64,7 +64,7 @@ export type WorkoutTicket = {
   volumeChangePercentage?: number
   sessionNumber: number
   exercises: WorkoutExerciseResult[]
-  /** JPEG data URI containing the already-rendered camera effect. */
+  /** Local URI containing the already-rendered camera effect. */
   photo: string
   signedByAuthor: boolean
   circles: string[]
