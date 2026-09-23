@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons'
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/components/colors'
@@ -132,12 +132,6 @@ export default function TicketsTab() {
   const router = useRouter()
   const [viewMode, setViewMode] = useState<'grid' | 'month'>('grid')
   const routineSheetRef = useRef<BottomSheetModal>(null)
-  const snapPoints = useMemo(
-    () => [
-      '45%',
-    ],
-    [],
-  )
   const tickets = useTicketsStore((state) => state.tickets)
   const routines = useRoutinesStore((state) => state.routines)
   const completedDays = completedDayKeys(tickets)
@@ -259,7 +253,6 @@ export default function TicketsTab() {
 
       <BottomSheetModal
         ref={routineSheetRef}
-        snapPoints={snapPoints}
         backgroundStyle={{
           backgroundColor: Colors.surface.card,
         }}
@@ -267,7 +260,13 @@ export default function TicketsTab() {
           backgroundColor: Colors.ink.soft,
         }}
       >
-        <BottomSheetView className='flex-1 px-5'>
+        <BottomSheetScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 8,
+            paddingBottom: 28,
+          }}
+        >
           <Text className='font-geist-mono-semibold text-2xl uppercase text-surface-dark'>
             Elige una rutina
           </Text>
@@ -316,7 +315,7 @@ export default function TicketsTab() {
               ))
             )}
           </View>
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </SafeAreaView>
   )
