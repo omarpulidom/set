@@ -1,14 +1,30 @@
-import { type NitroSQLiteConnection, open } from 'react-native-nitro-sqlite'
+import { NitroSQLite, type NitroSQLiteConnection, open } from 'react-native-nitro-sqlite'
+
+const DATABASE_NAME = 'set.sqlite'
 
 const databaseHost = globalThis as typeof globalThis & {
   __setNitroDatabase?: NitroSQLiteConnection
 }
 
-if (!databaseHost.__setNitroDatabase) {
-  databaseHost.__setNitroDatabase = open({
-    name: 'set.sqlite',
+function openAppDatabase() {
+  // Nitro keeps its native connection across JS reloads. This app owns one
+  // connection to this database, so release any connection from the old JS
+  // runtime before creating the new JS session.
+  try {
+    NitroSQLite.native.close(DATABASE_NAME)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    if (!message.includes(`${DATABASE_NAME} is not open`)) throw error
+  }
+
+  return open({
+    name: DATABASE_NAME,
     location: 'databases',
   })
+}
+
+if (!databaseHost.__setNitroDatabase) {
+  databaseHost.__setNitroDatabase = openAppDatabase()
 }
 
 export const database = databaseHost.__setNitroDatabase
