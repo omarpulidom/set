@@ -1,21 +1,34 @@
 import { Feather } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { useCallback, useEffect } from 'react'
+import { type ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import Animated, { useAnimatedRef } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import Sortable, {
+  type SortableGridDragEndParams,
+  type SortableGridRenderItem,
+} from 'react-native-sortables'
 import { Colors } from '@/components/colors'
 import { RoutinePaper, RoutineRule } from '@/components/routines/RoutinePaper'
 import { getExerciseDisplayNameById } from '@/features/exercises/catalog'
 import { useDerivedPrimaryFocus, useDerivedRoutineFocus } from '@/features/exercises/muscles'
-import { useRoutineDraftStore } from '@/features/exercises/routine-draft-store'
+import {
+  type DraftRoutineExercise,
+  useRoutineDraftStore,
+} from '@/features/exercises/routine-draft-store'
 import { useRoutinesStore } from '@/features/routines/routines-store'
+
+function getExerciseKey(exercise: DraftRoutineExercise) {
+  return exercise.id
+}
 
 export default function NewRoutineScreen() {
   const router = useRouter()
+  const scrollRef = useAnimatedRef<ScrollView>()
   const { routineId } = useLocalSearchParams<{
     routineId?: string
   }>()
-  const { editingId, exercises, name, removeExercise, reset, setName, loadForEdit } =
+  const { editingId, exercises, name, moveExercise, removeExercise, reset, setName, loadForEdit } =
     useRoutineDraftStore()
   const derivedFocus = useDerivedRoutineFocus()
   const primaryFocus = useDerivedPrimaryFocus()
@@ -61,6 +74,101 @@ export default function NewRoutineScreen() {
     router.back()
   }
 
+  const renderExercise = useCallback<SortableGridRenderItem<DraftRoutineExercise>>(
+    ({ item: exercise, index }) => (
+      <View className='w-full flex-row items-stretch bg-surface-card'>
+        <View className='min-w-0 flex-1 flex-row items-center'>
+          <Sortable.Handle
+            style={{
+              width: 32,
+              alignSelf: 'stretch',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <View
+              accessible
+              accessibilityRole='adjustable'
+              accessibilityLabel={`Reordenar ${exercise.name}`}
+              accessibilityHint='Mantén pulsado y arrastra para cambiar el orden'
+              accessibilityValue={{
+                text: `${index + 1} de ${exercises.length}`,
+              }}
+              accessibilityActions={[
+                {
+                  name: 'increment',
+                  label: 'Mover hacia abajo',
+                },
+                {
+                  name: 'decrement',
+                  label: 'Mover hacia arriba',
+                },
+              ]}
+              onAccessibilityAction={(event) => {
+                if (event.nativeEvent.actionName === 'increment') {
+                  moveExercise(index, index + 1)
+                } else if (event.nativeEvent.actionName === 'decrement') {
+                  moveExercise(index, index - 1)
+                }
+              }}
+              className='w-8 items-center justify-center py-3'
+            >
+              <Feather name='menu' size={15} color={Colors.ink.muted} />
+            </View>
+          </Sortable.Handle>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: '/routine/exercises/[exerciseId]',
+                params: {
+                  exerciseId: exercise.catalogExerciseId,
+                  draftExerciseId: exercise.id,
+                },
+              })
+            }
+            activeOpacity={0.82}
+            className='min-w-0 flex-1 justify-center py-3 pr-2'
+          >
+            <Text className='font-geist-mono text-sm uppercase text-surface-dark'>
+              {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View className='w-20 justify-center border-l border-surface-dark px-2 py-2'>
+          <Text className='text-right font-geist-mono text-sm text-surface-dark'>
+            {exercise.targetSets}
+          </Text>
+        </View>
+        <View className='w-16 justify-center border-l border-surface-dark px-2 py-2'>
+          <Text className='text-right font-geist-mono text-sm text-surface-dark'>
+            {exercise.targetReps}
+          </Text>
+        </View>
+        <View className='w-8 items-center justify-center border-l border-surface-dark'>
+          <TouchableOpacity
+            onPress={() => removeExercise(exercise.id)}
+            className='h-8 w-8 items-center justify-center'
+          >
+            <Feather name='x' size={12} color={Colors.ink.soft} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    ),
+    [
+      exercises.length,
+      moveExercise,
+      removeExercise,
+      router,
+    ],
+  )
+  const handleDragEnd = useCallback(
+    ({ fromIndex, toIndex }: SortableGridDragEndParams<DraftRoutineExercise>) =>
+      moveExercise(fromIndex, toIndex),
+    [
+      moveExercise,
+    ],
+  )
+
   return (
     <SafeAreaView
       className='flex-1 bg-surface'
@@ -84,8 +192,11 @@ export default function NewRoutineScreen() {
         </View>
 
         <RoutinePaper className='mt-8 flex-1 pt-12' topRule={false}>
-          <ScrollView
-            className='flex-1'
+          <Animated.ScrollView
+            ref={scrollRef}
+            style={{
+              flex: 1,
+            }}
             contentContainerStyle={{
               flexGrow: 1,
             }}
@@ -147,7 +258,7 @@ export default function NewRoutineScreen() {
             <View className='my-5'>
               <RoutineRule />
             </View>
-            <View className='border border-surface-dark'>
+            <View className='min-w-0 self-stretch border border-surface-dark'>
               <View className='flex-row border-b border-surface-dark'>
                 <Text className='flex-1 px-3 py-2 font-geist-mono-semibold text-[12px] tracking-[1px] text-surface-dark'>
                   EJERCICIO
@@ -160,49 +271,31 @@ export default function NewRoutineScreen() {
                 </Text>
                 <View className='w-8 border-l border-surface-dark' />
               </View>
-              {exercises.map((exercise, index) => (
-                <TouchableOpacity
-                  key={exercise.id}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/routine/exercises/[exerciseId]',
-                      params: {
-                        exerciseId: exercise.catalogExerciseId,
-                        draftExerciseId: exercise.id,
-                      },
-                    })
-                  }
-                  activeOpacity={0.82}
-                  className='relative flex-row items-stretch'
-                >
-                  <Text className='flex-1 px-3 py-2 font-geist-mono text-sm uppercase text-surface-dark'>
-                    {getExerciseDisplayNameById(exercise.catalogExerciseId, exercise.name)}
-                  </Text>
-                  <Text className='w-20 border-l border-surface-dark px-2 py-2 text-right font-geist-mono text-sm text-surface-dark'>
-                    {exercise.targetSets}
-                  </Text>
-                  <Text className='w-16 border-l border-surface-dark px-2 py-2 text-right font-geist-mono text-sm text-surface-dark'>
-                    {exercise.targetReps}
-                  </Text>
-                  <View className='w-8 items-center justify-center border-l border-surface-dark'>
-                    <TouchableOpacity
-                      onPress={(event) => {
-                        event.stopPropagation()
-                        removeExercise(exercise.id)
-                      }}
-                      className='h-6 w-6 items-center justify-center'
-                    >
-                      <Feather name='x' size={12} color={Colors.ink.soft} />
-                    </TouchableOpacity>
-                  </View>
-                  {index < exercises.length - 1 && (
-                    <View className='absolute bottom-0 left-0 right-0 h-px bg-border-warm' />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {exercises.length > 0 ? (
+                <View className='bg-border-warm'>
+                  <Sortable.Grid
+                    columns={1}
+                    data={exercises}
+                    keyExtractor={getExerciseKey}
+                    renderItem={renderExercise}
+                    rowGap={1}
+                    customHandle
+                    sortEnabled={exercises.length > 1}
+                    dragActivationDelay={160}
+                    activeItemScale={1.025}
+                    inactiveItemOpacity={1}
+                    itemEntering={null}
+                    itemExiting={null}
+                    itemsLayoutTransitionMode='reorder'
+                    overDrag='vertical'
+                    scrollableRef={scrollRef}
+                    onDragEnd={handleDragEnd}
+                  />
+                </View>
+              ) : null}
               <TouchableOpacity
                 onPress={() => router.push('/routine/exercises')}
-                className='flex-row items-center border-t border-surface-dark px-3 py-3'
+                className={`flex-row items-center px-3 py-3 ${exercises.length ? 'border-t border-surface-dark' : ''}`}
               >
                 <Feather name='plus' size={15} color={Colors.surface.dark} />
                 <Text className='ml-2 font-geist-mono-medium text-xs uppercase text-surface-dark'>
@@ -210,7 +303,7 @@ export default function NewRoutineScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </Animated.ScrollView>
         </RoutinePaper>
 
         <TouchableOpacity

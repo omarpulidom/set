@@ -3,7 +3,7 @@ import type { RoutineExercise } from '@/features/gym/types'
 import { useRoutinesStore } from '@/features/routines/routines-store'
 import type { CatalogExercise } from './catalog'
 
-type DraftRoutineExercise = RoutineExercise & {
+export type DraftRoutineExercise = RoutineExercise & {
   catalogExerciseId: string
 }
 
@@ -14,6 +14,7 @@ type RoutineDraftStore = {
   setName: (name: string) => void
   addExercise: (exercise: CatalogExercise, targetSets?: number, targetReps?: number) => void
   removeExercise: (id: string) => void
+  moveExercise: (fromIndex: number, toIndex: number) => void
   updateExercise: (id: string, field: 'targetSets' | 'targetReps', value: number) => void
   loadForEdit: (routineId: string) => void
   reset: () => void
@@ -47,6 +48,26 @@ export const useRoutineDraftStore = create<RoutineDraftStore>((set) => ({
     set((state) => ({
       exercises: state.exercises.filter((exercise) => exercise.id !== id),
     })),
+  moveExercise: (fromIndex, toIndex) =>
+    set((state) => {
+      if (
+        fromIndex === toIndex ||
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= state.exercises.length ||
+        toIndex >= state.exercises.length
+      ) {
+        return state
+      }
+      const exercises = [
+        ...state.exercises,
+      ]
+      const [moved] = exercises.splice(fromIndex, 1)
+      exercises.splice(toIndex, 0, moved)
+      return {
+        exercises,
+      }
+    }),
   updateExercise: (id, field, value) =>
     set((state) => ({
       exercises: state.exercises.map((exercise) =>
