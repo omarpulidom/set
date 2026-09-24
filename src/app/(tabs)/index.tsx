@@ -1,5 +1,10 @@
 import { Feather } from '@expo/vector-icons'
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import {
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet'
 import { useRouter } from 'expo-router'
 import { useRef, useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
@@ -21,6 +26,18 @@ function formatCompletedAt(isoDate: string) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(isoDate))
+}
+
+function RoutineSheetBackdrop(props: BottomSheetBackdropProps) {
+  return (
+    <BottomSheetBackdrop
+      {...props}
+      appearsOnIndex={0}
+      disappearsOnIndex={-1}
+      opacity={0.45}
+      pressBehavior='close'
+    />
+  )
 }
 
 function trainingMonths(completedDays: Set<string>) {
@@ -253,6 +270,7 @@ export default function TicketsTab() {
 
       <BottomSheetModal
         ref={routineSheetRef}
+        backdropComponent={RoutineSheetBackdrop}
         backgroundStyle={{
           backgroundColor: Colors.surface.card,
         }}
